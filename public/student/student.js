@@ -302,7 +302,10 @@ socket.on("game:questionStart", (data) => {
   renderAnswerCards(data.options);
   els.submittedOverlay.classList.remove("visible");
   showView("view-question");
-  els.questionText.scrollIntoView({ behavior: "smooth", block: "start" });
+  // "center" (not "start") so the fixed brand chip at the very top of the
+  // screen doesn't overlap the question, and the answer cards below still
+  // have room to show — "start" was pinning the question flush to the top edge.
+  els.questionText.scrollIntoView({ behavior: "smooth", block: "center" });
 
   if (countdownIntervalId) clearInterval(countdownIntervalId);
   countdownIntervalId = startCountdownRing(els.timerFillCircle, els.timerValue, data.timeLimitSeconds);
@@ -348,16 +351,16 @@ function renderAchievements(hallOfFame) {
   const badges = [];
 
   if (lastAnswerResult && lastAnswerResult.correct && lastAnswerResult.pointsAwarded >= 900) {
-    badges.push({ icon: "⚡", label: "Speed Demon" });
+    badges.push({ icon: "⚡", label: "Fast Answer" });
   }
   if (myStreak >= 3) {
-    badges.push({ icon: "🔥", label: "On Fire" });
+    badges.push({ icon: "🔥", label: "Answer Streak" });
   }
   if (hallOfFame && hallOfFame.highestAccuracy && hallOfFame.highestAccuracy.name === selectedParticipant.name) {
-    badges.push({ icon: "🎯", label: "Accuracy Master" });
+    badges.push({ icon: "🎯", label: "Highest Accuracy" });
   }
   if (myCurrentRank && myCurrentRank <= 3) {
-    badges.push({ icon: "⭐", label: "Knowledge Star" });
+    badges.push({ icon: "⭐", label: "Top 3" });
   }
 
   els.achievementRow.innerHTML = "";
@@ -398,12 +401,12 @@ socket.on("game:finalResults", (data) => {
   } · Champion Group: ${data.championGroup ? data.championGroup.name : "–"}`;
 
   const finalBadges = [];
-  if (myLongestStreak >= 3) finalBadges.push({ icon: "🔥", label: "On Fire" });
+  if (myLongestStreak >= 3) finalBadges.push({ icon: "🔥", label: "Answer Streak" });
   if (data.hallOfFame.highestAccuracy && data.hallOfFame.highestAccuracy.name === selectedParticipant.name) {
-    finalBadges.push({ icon: "🎯", label: "Accuracy Master" });
+    finalBadges.push({ icon: "🎯", label: "Highest Accuracy" });
   }
   if (data.hallOfFame.fastestThinker && data.hallOfFame.fastestThinker.name === selectedParticipant.name) {
-    finalBadges.push({ icon: "⚡", label: "Speed Demon" });
+    finalBadges.push({ icon: "⚡", label: "Fastest Answer" });
   }
   els.finalAchievementRow.innerHTML = "";
   finalBadges.forEach((b, i) => {

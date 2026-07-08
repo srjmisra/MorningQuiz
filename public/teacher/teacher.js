@@ -317,7 +317,10 @@ function handleQuestionStart(data, overrideSeconds) {
   els.revealBtn.disabled = false;
   els.revealBtn.hidden = false;
   showView("view-question");
-  els.questionText.scrollIntoView({ behavior: "smooth", block: "start" });
+  // "center" (not "start") so the fixed corner controls at the very top of
+  // the screen don't overlap the question, and the answer grid below still
+  // has room to show — "start" was pinning the question flush to the top edge.
+  els.questionText.scrollIntoView({ behavior: "smooth", block: "center" });
 
   if (countdownIntervalId) clearInterval(countdownIntervalId);
   const seconds = typeof overrideSeconds === "number" ? overrideSeconds : data.timeLimitSeconds;
