@@ -317,6 +317,7 @@ function handleQuestionStart(data, overrideSeconds) {
   els.revealBtn.disabled = false;
   els.revealBtn.hidden = false;
   showView("view-question");
+  els.questionText.scrollIntoView({ behavior: "smooth", block: "start" });
 
   if (countdownIntervalId) clearInterval(countdownIntervalId);
   const seconds = typeof overrideSeconds === "number" ? overrideSeconds : data.timeLimitSeconds;
@@ -377,12 +378,16 @@ function handleQuestionEnd(data, opts) {
         ? "Finish Event"
         : "Next Question";
     showView("view-results");
+    els.resultsCorrectAnswer.scrollIntoView({ behavior: "smooth", block: "start" });
 
     const revealDelay = immediate ? 0 : null;
     setTimeout(() => els.knowledgeCard.classList.add("visible"), revealDelay ?? 100);
     setTimeout(() => els.analyticsPanel.classList.add("visible"), revealDelay ?? 500);
     setTimeout(() => els.groupProgressReveal.classList.add("visible"), revealDelay ?? 1000);
-    setTimeout(() => els.leaderboardsRow.classList.add("visible"), revealDelay ?? 1600);
+    setTimeout(() => {
+      els.leaderboardsRow.classList.add("visible");
+      els.leaderboardsRow.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, revealDelay ?? 1600);
     setTimeout(() => els.hofGrid.classList.add("visible"), revealDelay ?? 2200);
   };
 
@@ -577,6 +582,10 @@ function handleFinalResults(data, opts) {
   );
 
   showView("view-final");
+  els.podiumRow.scrollIntoView({ behavior: "smooth", block: "start" });
+  setTimeout(() => {
+    els.finalIndividualRankings.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, 1500);
   if (!skipCelebration) {
     launchConfetti({ container: els.celebrationOverlay, count: 150 });
     launchFireworks({ container: els.celebrationOverlay, bursts: 6 });

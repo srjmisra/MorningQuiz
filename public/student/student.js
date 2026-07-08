@@ -160,6 +160,7 @@ function selectParticipant(p) {
   els.confirmGroup.textContent = group ? group.name : "";
   els.joinError.textContent = "";
   showView("view-confirm");
+  els.joinBtn.scrollIntoView({ behavior: "smooth", block: "end" });
 }
 
 els.searchInput.addEventListener("input", (e) => {
@@ -301,6 +302,7 @@ socket.on("game:questionStart", (data) => {
   renderAnswerCards(data.options);
   els.submittedOverlay.classList.remove("visible");
   showView("view-question");
+  els.questionText.scrollIntoView({ behavior: "smooth", block: "start" });
 
   if (countdownIntervalId) clearInterval(countdownIntervalId);
   countdownIntervalId = startCountdownRing(els.timerFillCircle, els.timerValue, data.timeLimitSeconds);
@@ -339,6 +341,7 @@ socket.on("game:questionEnd", (data) => {
 
   els.submittedOverlay.classList.remove("visible");
   showView("view-result");
+  els.resultBadge.scrollIntoView({ behavior: "smooth", block: "start" });
 });
 
 function renderAchievements(hallOfFame) {
