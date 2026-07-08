@@ -5,99 +5,139 @@ module.exports = {
   title: "Code to Career — CS & IP Quiz",
   questions: [
     {
-      category: "Data Structures",
-      question: "Which data structure follows the LIFO (Last-In-First-Out) principle?",
+      category: "Computer Networks",
+      question: "Why was IPv6 developed as the successor to IPv4?",
       image: null,
-      options: ["Queue", "Stack", "Linked List", "Graph"],
+      options: ["Faster transmission", "Larger address space", "Simpler hardware", "Lower bandwidth"],
       correctIndex: 1,
-      explanation: "A Stack is LIFO — the last element pushed is the first one popped. Think of a stack of plates.",
-      timeLimitSeconds: 20
-    },
-    {
-      category: "Python",
-      question: "In Python, which keyword is used to define a function?",
-      image: null,
-      options: ["function", "def", "fun", "define"],
-      correctIndex: 1,
-      explanation: "Python uses the 'def' keyword to define a function, e.g. def greet():",
+      explanation: "IPv6 was introduced mainly to solve IPv4 address exhaustion by expanding the address space from 32 bits to 128 bits.",
       timeLimitSeconds: 15
     },
     {
-      category: "Databases",
-      question: "What does SQL stand for?",
+      category: "Lesson Planning",
+      question: "Competency-based teaching primarily focuses on developing:",
       image: null,
-      options: [
-        "Structured Query Language",
-        "Simple Question Language",
-        "Sequential Query Logic",
-        "Structured Question Loop"
-      ],
+      options: ["Skills", "Attendance", "Homework", "Notes"],
       correctIndex: 0,
-      explanation: "SQL = Structured Query Language, used to query and manage relational databases.",
+      explanation: "Competency-based teaching centers on building measurable skills and abilities in learners, not just covering content.",
       timeLimitSeconds: 15
     },
     {
-      category: "Python",
-      question: "Which of these is NOT a valid Python data type?",
+      category: "Computer Networks",
+      question: "A port number is used to identify a:",
       image: null,
-      options: ["list", "tuple", "array", "dict"],
-      correctIndex: 2,
-      explanation: "Python has no built-in 'array' type by that name — it uses list, tuple, dict, and set natively (array requires the array/numpy module).",
-      timeLimitSeconds: 20
-    },
-    {
-      category: "Networking",
-      question: "In networking, what does IP stand for?",
-      image: null,
-      options: ["Internet Protocol", "Internal Process", "Intranet Path", "Information Packet"],
-      correctIndex: 0,
-      explanation: "IP stands for Internet Protocol — the addressing/routing scheme for data across networks.",
-      timeLimitSeconds: 15
-    },
-    {
-      category: "Algorithms",
-      question: "Which sorting algorithm has the best average-case time complexity?",
-      image: null,
-      options: ["Bubble Sort", "Selection Sort", "Quick Sort", "Insertion Sort"],
-      correctIndex: 2,
-      explanation: "Quick Sort averages O(n log n), while Bubble, Selection, and Insertion Sort average O(n²).",
-      timeLimitSeconds: 20
-    },
-    {
-      category: "Web Development",
-      question: "In HTML, which tag is used to link an external CSS file?",
-      image: null,
-      options: ["<style>", "<css>", "<link>", "<script>"],
-      correctIndex: 2,
-      explanation: "The <link> tag (with rel=\"stylesheet\") connects an external CSS file to an HTML document.",
-      timeLimitSeconds: 15
-    },
-    {
-      category: "Algorithms",
-      question: "What is the time complexity of binary search on a sorted array?",
-      image: null,
-      options: ["O(n)", "O(n²)", "O(log n)", "O(1)"],
-      correctIndex: 2,
-      explanation: "Binary search halves the search space each step, giving O(log n) time complexity.",
-      timeLimitSeconds: 20
-    },
-    {
-      category: "Databases",
-      question: "Which of these is a NoSQL database?",
-      image: null,
-      options: ["MySQL", "PostgreSQL", "Oracle", "MongoDB"],
-      correctIndex: 3,
-      explanation: "MongoDB is a document-oriented NoSQL database; the other three are relational (SQL) databases.",
-      timeLimitSeconds: 15
-    },
-    {
-      category: "Networking",
-      question: "In IP addressing, how many bits does an IPv4 address have?",
-      image: null,
-      options: ["16", "32", "64", "128"],
+      options: ["Device", "Application", "Network", "Protocol"],
       correctIndex: 1,
-      explanation: "IPv4 addresses are 32 bits long (four 8-bit octets), e.g. 192.168.1.1. IPv6 uses 128 bits.",
+      explanation: "A port number identifies a specific application or service running on a device, while the IP address identifies the device itself.",
+      timeLimitSeconds: 15
+    },
+    {
+      category: "Cyber Physical Systems & IoT",
+      question: "Which component collects data from the physical environment?",
+      image: null,
+      options: ["Sensor", "Browser", "Database", "Compiler"],
+      correctIndex: 0,
+      explanation: "Sensors capture real-world physical data — such as temperature or motion — and feed it into a Cyber Physical System.",
+      timeLimitSeconds: 15
+    },
+    {
+      category: "Condemnation of Computer Articles",
+      question: "Which document is prepared to initiate the condemnation proposal?",
+      image: null,
+      options: ["CS-49", "BER", "Stock Register", "Gate Pass"],
+      correctIndex: 0,
+      explanation: "Form CS-49 is the prescribed document used to initiate a condemnation proposal for computer articles.",
       timeLimitSeconds: 20
+    },
+    {
+      category: "Computer Networks",
+      question: "Which application-layer protocol is most commonly associated with the World Wide Web?",
+      image: null,
+      options: ["FTP", "HTTP", "SMTP", "DNS"],
+      correctIndex: 1,
+      explanation: "HTTP (HyperText Transfer Protocol) is the application-layer protocol used to transfer web pages.",
+      timeLimitSeconds: 15
+    },
+    {
+      category: "Cyber Physical Systems & IoT",
+      question: "In a Cyber Physical System, an actuator is responsible for:",
+      image: null,
+      options: ["Sensing", "Action", "Storage", "Routing"],
+      correctIndex: 1,
+      explanation: "An actuator converts a control signal into physical action, such as moving a motor or opening a valve.",
+      timeLimitSeconds: 15
+    },
+    {
+      category: "Computer Networks",
+      question: "Which protocol suite forms the foundation of the modern Internet?",
+      image: null,
+      options: ["OSI", "TCP/IP", "FTP", "SMTP"],
+      correctIndex: 1,
+      explanation: "TCP/IP is the protocol suite the modern Internet is built on; OSI is a conceptual reference model, not a deployed suite.",
+      timeLimitSeconds: 15
+    },
+    {
+      category: "Lesson Planning",
+      question: "A well-written learning outcome should be:",
+      image: null,
+      options: ["Measurable", "Lengthy", "General", "Difficult"],
+      correctIndex: 0,
+      explanation: "Good learning outcomes are specific and measurable, so achievement can be clearly assessed.",
+      timeLimitSeconds: 15
+    },
+    {
+      category: "Computer Networks",
+      question: "Which layer provides end-to-end communication between applications?",
+      image: null,
+      options: ["Network", "Transport", "Data Link", "Physical"],
+      correctIndex: 1,
+      explanation: "The Transport layer (e.g. TCP/UDP) provides end-to-end communication between applications running on different hosts.",
+      timeLimitSeconds: 20
+    },
+    {
+      category: "Cyber Physical Systems & IoT",
+      question: "Kevin Ashton is best known for introducing the term:",
+      image: null,
+      options: ["AI", "IoT", "Blockchain", "Big Data"],
+      correctIndex: 1,
+      explanation: "Kevin Ashton coined the term \"Internet of Things\" in 1999 while working on RFID technology.",
+      timeLimitSeconds: 15
+    },
+    {
+      category: "Condemnation of Computer Articles",
+      question: "What is the first step in the condemnation process?",
+      image: null,
+      options: ["Inspection", "Identification", "Approval", "Disposal"],
+      correctIndex: 1,
+      explanation: "The condemnation process begins with identifying the unserviceable articles, before inspection, approval, and disposal follow.",
+      timeLimitSeconds: 20
+    },
+    {
+      category: "Computer Networks",
+      question: "An intranet is primarily intended for use within an:",
+      image: null,
+      options: ["ISP", "Organization", "Country", "City"],
+      correctIndex: 1,
+      explanation: "An intranet is a private network restricted to use within a single organization.",
+      timeLimitSeconds: 15
+    },
+    {
+      category: "Cyber Physical Systems & IoT",
+      question: "The Internet of Things (IoT) primarily connects:",
+      image: null,
+      options: ["Programs", "Physical objects", "Documents", "Websites"],
+      correctIndex: 1,
+      explanation: "IoT connects physical objects and devices embedded with sensors so they can exchange data over a network.",
+      timeLimitSeconds: 15
+    },
+    {
+      category: "Computer Networks",
+      question: "The Internet is best described as a:",
+      image: null,
+      options: ["LAN", "Network of networks", "Database", "Server"],
+      correctIndex: 1,
+      explanation: "The Internet is a global \"network of networks\" connecting countless smaller networks together.",
+      timeLimitSeconds: 15
     }
   ]
 };
