@@ -17,12 +17,23 @@ socket.on("connect", () => {
   }
 });
 
+// Teacher reset the whole session — safest, lowest-risk way to return every
+// client to a clean starting state is a full reload (reuses the existing
+// init() flow, which will correctly show "no active session" afterward).
+socket.on("session:reset", () => {
+  location.reload();
+});
+
 const els = {
   pwOrg: document.getElementById("pw-org"),
   pwInstitute: document.getElementById("pw-institute"),
   pwTitle: document.getElementById("pw-title"),
   pwProgramme: document.getElementById("pw-programme"),
   pwContinueBtn: document.getElementById("pw-continue-btn"),
+
+  sessionStateHeading: document.getElementById("session-state-heading"),
+  sessionStateBody: document.getElementById("session-state-body"),
+  sessionStateRefreshBtn: document.getElementById("session-state-refresh-btn"),
 
   roomCodeInput: document.getElementById("room-code-input"),
   searchInput: document.getElementById("search-input"),
@@ -168,8 +179,11 @@ els.backBtn.addEventListener("click", () => {
 const ERROR_MESSAGES = {
   notFound: "Room code not found. Check with your host.",
   alreadyJoined: "This name is already joined from another device.",
-  hostGroupExcluded: "This group is hosting the event and isn't part of the quiz."
+  hostGroupExcluded: "This group is hosting the event and isn't part of the quiz.",
+  quizFinished: "This quiz has ended."
 };
+
+els.sessionStateRefreshBtn.addEventListener("click", () => location.reload());
 
 els.joinBtn.addEventListener("click", () => {
   if (!selectedParticipant) return;
@@ -441,6 +455,16 @@ async function init() {
     renderGroupTabs();
     renderParticipantList();
     renderSessionBranding(roster.event.session);
+
+    if (roster.liveRoomStatus === null) {
+      els.sessionStateHeading.textContent = "Please Wait";
+      els.sessionStateBody.textContent = "The quiz has not started yet. Please wait for the teacher.";
+      showView("view-session-state");
+    } else if (roster.liveRoomStatus === "ended") {
+      els.sessionStateHeading.textContent = "Quiz Ended";
+      els.sessionStateBody.textContent = "This quiz has ended.";
+      showView("view-session-state");
+    }
   } catch (err) {
     console.error("Failed to load roster:", err);
   } finally {

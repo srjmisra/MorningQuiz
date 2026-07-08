@@ -39,6 +39,10 @@ function joinPlayer(roomCode, participantId, socketId) {
     return { ok: false, reason: "notFound" };
   }
 
+  if (room.status === "ended") {
+    return { ok: false, reason: "quizFinished" };
+  }
+
   const participant = dataStore.getParticipantById(participantId);
   if (!participant) {
     return { ok: false, reason: "notFound" };
@@ -76,6 +80,25 @@ function joinPlayer(roomCode, participantId, socketId) {
   };
   room.players.set(participantId, player);
   return { ok: true, player, participant };
+}
+
+// Full teardown: broadcasts a reset notice, drops every socket from the
+// room, then clears server state entirely so a new quiz can start clean —
+// no process restart required.
+function resetSession(io) {
+  if (!room) return;
+  const code = room.code;
+  io.to(code).emit("session:reset", {});
+
+  const socketsInRoom = io.sockets.adapter.rooms.get(code);
+  if (socketsInRoom) {
+    for (const socketId of [...socketsInRoom]) {
+      const s = io.sockets.sockets.get(socketId);
+      if (s) s.leave(code);
+    }
+  }
+
+  room = null;
 }
 
 function disconnectBySocketId(socketId) {
@@ -119,5 +142,6 @@ module.exports = {
   reclaimTeacher,
   joinPlayer,
   disconnectBySocketId,
-  lobbySnapshot
+  lobbySnapshot,
+  resetSession
 };

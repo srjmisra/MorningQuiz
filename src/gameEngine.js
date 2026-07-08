@@ -229,6 +229,14 @@ function nextQuestion(io) {
   goToNextQuestion(io);
 }
 
+// Lets the teacher finish early from any in-progress point — reuses the
+// exact same finishEvent() path a natural finish already takes.
+function endQuizEarly(io) {
+  const room = roomManager.getRoom();
+  if (!room || room.status === "ended") return;
+  finishEvent(io);
+}
+
 function finishEvent(io) {
   const room = roomManager.getRoom();
   if (!room) return;
@@ -393,6 +401,7 @@ module.exports = {
   submitAnswer,
   forceReveal,
   nextQuestion,
+  endQuizEarly,
   maybeAutoEndQuestion,
   getReconnectSnapshot
 };

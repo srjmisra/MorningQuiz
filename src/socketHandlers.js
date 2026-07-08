@@ -63,6 +63,16 @@ function registerSocketHandlers(io) {
       if (typeof ack === "function") ack({ ok: true });
     });
 
+    socket.on("teacher:endQuiz", (_payload, ack) => {
+      gameEngine.endQuizEarly(io);
+      if (typeof ack === "function") ack({ ok: true });
+    });
+
+    socket.on("teacher:resetSession", (_payload, ack) => {
+      roomManager.resetSession(io);
+      if (typeof ack === "function") ack({ ok: true });
+    });
+
     socket.on("student:submitAnswer", (payload, ack) => {
       const result = gameEngine.submitAnswer(io, socket, payload);
       if (typeof ack === "function") ack(result);

@@ -6,6 +6,7 @@ const { Server } = require("socket.io");
 
 // Fails fast with a clear error if config/*.json is inconsistent.
 const dataStore = require("./src/dataStore");
+const roomManager = require("./src/roomManager");
 const { registerSocketHandlers } = require("./src/socketHandlers");
 
 const app = express();
@@ -27,10 +28,12 @@ app.get("/api/roster", (req, res) => {
   // Host group(s) (e.g. Group 3, running the event) are organisers, not
   // competitors — they're excluded here so they never appear in the join
   // list or any competition UI on the client.
+  const room = roomManager.getRoom();
   res.json({
     participants: dataStore.competingParticipants,
     groups: dataStore.competingGroups,
-    event: dataStore.event
+    event: dataStore.event,
+    liveRoomStatus: room ? room.status : null
   });
 });
 

@@ -10,6 +10,28 @@ socket.on("disconnect", () => {
   connectionDot.setAttribute("aria-label", "Disconnected — reconnecting");
 });
 
+// Teacher reset the whole session — safest, lowest-risk way to return every
+// client to a clean starting state is a full reload (reuses the existing
+// init() flow, which correctly shows Welcome when no room exists).
+socket.on("session:reset", () => {
+  location.reload();
+});
+
+const endQuizBtn = document.getElementById("end-quiz-btn");
+const resetSessionBtn = document.getElementById("reset-session-btn");
+
+endQuizBtn.addEventListener("click", () => {
+  if (!confirm("End the quiz now and show final results?")) return;
+  socket.emit("teacher:endQuiz", {}, () => {});
+});
+
+resetSessionBtn.addEventListener("click", () => {
+  if (!confirm("Reset the entire session? This clears all scores and participants.")) return;
+  // The server broadcasts session:reset back to this same socket (it's a
+  // member of the room too), which the handler above already reloads on.
+  socket.emit("teacher:resetSession", {}, () => {});
+});
+
 const els = {
   welcomeOrg: document.getElementById("welcome-org"),
   welcomeOrgHindi: document.getElementById("welcome-org-hindi"),
@@ -264,6 +286,7 @@ function handleQuestionIntro(data) {
   totalQuestionsCount = data.totalQuestions;
   els.introQuestionNumber.textContent = `Question ${data.questionIndex + 1} of ${data.totalQuestions}`;
   els.introCategory.textContent = data.category;
+  endQuizBtn.hidden = false;
   showView("view-intro");
 
   const steps = ["3", "2", "1", "GO!"];
@@ -541,6 +564,7 @@ function renderChampions(championIndividual, championGroup) {
 function handleFinalResults(data, opts) {
   const skipCelebration = Boolean(opts && opts.skipCelebration);
   els.statsBar.classList.remove("visible");
+  endQuizBtn.hidden = true;
 
   renderPodium(data.finalGroupRankings);
   renderChampions(data.championIndividual, data.championGroup);
@@ -588,6 +612,7 @@ function hydrateIcons() {
 function applyReconnectSnapshot(snapshot) {
   showToast("Reconnected to the live quiz", "ready");
   enterLobby(snapshot.code);
+  endQuizBtn.hidden = !["intro", "question", "locked", "results"].includes(snapshot.status);
 
   switch (snapshot.status) {
     case "lobby":
