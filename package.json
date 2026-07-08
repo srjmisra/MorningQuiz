@@ -1,0 +1,17 @@
+{
+  "name": "morningquiz",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Live quiz platform for KVS ZIET Bhubaneswar PGT(CS) In-Service Course",
+  "main": "server.js",
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "socket.io": "^4.7.5"
+  }
+}

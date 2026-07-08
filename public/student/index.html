@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#0b0f1a" />
+<link rel="manifest" href="/shared/manifest.json" />
+<title>MorningQuiz — Join</title>
+<link rel="stylesheet" href="/shared/theme.css" />
+<link rel="stylesheet" href="student.css" />
+</head>
+<body>
+  <div id="splash-screen" class="splash-screen">
+    <div class="brand-logo-frame">
+      <picture>
+        <source srcset="/shared/assets/images/kvs-logo.webp" type="image/webp" />
+        <img class="brand-logo" src="/shared/assets/images/kvs-logo.png" alt="Kendriya Vidyalaya Sangathan" />
+      </picture>
+    </div>
+    <div class="pulse-dot"></div>
+  </div>
+
+  <div class="brand-chip">
+    <picture>
+      <source srcset="/shared/assets/images/kvs-logo.webp" type="image/webp" />
+      <img class="brand-chip-logo" src="/shared/assets/images/kvs-logo.png" alt="Kendriya Vidyalaya Sangathan" />
+    </picture>
+    <span class="brand-chip-text"><strong>KVS · ZIET Bhubaneswar</strong><span class="brand-chip-sub">Code to Career · PGT(CS)</span></span>
+  </div>
+
+  <div class="app-shell">
+    <section id="view-participant-welcome" class="view view-active">
+      <div class="participant-welcome">
+        <div class="brand-logo-frame">
+          <picture>
+            <source srcset="/shared/assets/images/kvs-logo.webp" type="image/webp" />
+            <img class="brand-logo" src="/shared/assets/images/kvs-logo.png" alt="Kendriya Vidyalaya Sangathan" />
+          </picture>
+        </div>
+        <p class="kicker" id="pw-org">Kendriya Vidyalaya Sangathan</p>
+        <p class="kicker-sub" id="pw-institute">ZIET Bhubaneswar</p>
+
+        <h1 class="pw-title" id="pw-title">From Code to Career</h1>
+        <p class="pw-programme" id="pw-programme">PGT(CS) In-Service Course</p>
+
+        <div class="session-block" id="pw-session-block">
+          <p class="session-type" data-session-type></p>
+          <p class="session-presented-by">Hosted by <span data-session-presented-by></span></p>
+        </div>
+
+        <p class="pw-welcome-msg">Welcome! Tap below to join the live quiz.</p>
+
+        <button id="pw-continue-btn" class="btn-primary btn-large">Get Started</button>
+      </div>
+    </section>
+
+    <section id="view-join" class="view">
+      <header class="join-header">
+        <h1>Join the Quiz</h1>
+        <p class="subtitle">From Code to Career — PGT(CS)</p>
+        <p class="session-subtitle" id="join-session-subtitle">
+          <span data-session-type></span> Hosted by <span data-session-presented-by></span>
+        </p>
+      </header>
+
+      <div class="field-row">
+        <label for="room-code-input">Room Code</label>
+        <input id="room-code-input" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="6" placeholder="6-digit code" />
+      </div>
+
+      <div class="field-row">
+        <label for="search-input">Find Your Name</label>
+        <input id="search-input" type="text" placeholder="Search your name..." autocomplete="off" />
+      </div>
+
+      <div id="group-tabs" class="group-tabs"></div>
+
+      <ul id="participant-list" class="participant-list"></ul>
+    </section>
+
+    <section id="view-confirm" class="view">
+      <div class="glass-card confirm-card">
+        <h2 id="confirm-name"></h2>
+        <dl class="confirm-details">
+          <div><dt>KV</dt><dd id="confirm-kv"></dd></div>
+          <div><dt>Region</dt><dd id="confirm-region"></dd></div>
+          <div><dt>Group</dt><dd id="confirm-group"></dd></div>
+        </dl>
+        <button id="join-btn" class="btn-primary">Join Quiz</button>
+        <button id="back-btn" class="btn-text">Not you? Go back</button>
+        <p id="join-error" class="error-text"></p>
+      </div>
+    </section>
+
+    <section id="view-waiting" class="view">
+      <div class="glass-card waiting-card">
+        <div class="pulse-dot"></div>
+        <h2>You're in, <span id="waiting-name"></span>!</h2>
+        <p>Waiting for the quiz to start…</p>
+        <p class="waiting-group" id="waiting-group"></p>
+      </div>
+    </section>
+
+    <section id="view-intro" class="view">
+      <div class="intro-screen">
+        <p class="intro-question-number" id="intro-question-number"></p>
+        <p class="intro-category" id="intro-category"></p>
+        <div class="intro-countdown" id="intro-countdown">3</div>
+        <p class="intro-hint">Get ready!</p>
+      </div>
+    </section>
+
+    <section id="view-question" class="view">
+      <div class="question-topbar">
+        <span class="question-progress" id="question-progress"></span>
+        <div class="timer-ring timer-ring-sm" id="timer-ring">
+          <svg viewBox="0 0 100 100">
+            <circle class="timer-track" cx="50" cy="50" r="45"></circle>
+            <circle class="timer-fill" id="timer-fill-circle" cx="50" cy="50" r="45"></circle>
+          </svg>
+          <span class="timer-value" id="timer-value"></span>
+        </div>
+      </div>
+
+      <div class="question-body glass-card">
+        <h2 id="question-text"></h2>
+        <img id="question-image" class="question-image" alt="" hidden />
+      </div>
+
+      <div class="answer-grid" id="answer-grid"></div>
+
+      <div class="submitted-overlay" id="submitted-overlay">
+        <p id="submitted-message">✅ Answer Submitted</p>
+        <div class="submitted-stats" id="submitted-stats">
+          <div><span id="submitted-score">0</span><label>Score</label></div>
+          <div><span id="submitted-rank">–</span><label>Rank</label></div>
+          <div><span id="submitted-group-name">–</span><label>Group</label></div>
+        </div>
+        <p class="submitted-sub" id="submitted-sub">Waiting for reveal…</p>
+      </div>
+    </section>
+
+    <section id="view-result" class="view">
+      <div class="glass-card result-card">
+        <p class="result-badge" id="result-badge"></p>
+        <p class="result-points" id="result-points"></p>
+
+        <div class="knowledge-card visible" id="knowledge-card">
+          <p class="km-label">Learning Moment</p>
+          <p class="km-text" id="result-explanation"></p>
+        </div>
+
+        <div class="result-meta">
+          <div><span id="result-score">0</span><label>Total Score</label></div>
+          <div><span id="result-streak">0</span><label>Streak</label></div>
+        </div>
+
+        <div class="achievement-row" id="achievement-row"></div>
+      </div>
+    </section>
+
+    <section id="view-final" class="view">
+      <div class="glass-card final-panel">
+        <div class="brand-logo-frame brand-logo-frame-sm">
+          <picture>
+            <source srcset="/shared/assets/images/kvs-logo.webp" type="image/webp" />
+            <img class="brand-logo" src="/shared/assets/images/kvs-logo.png" alt="Kendriya Vidyalaya Sangathan logo" />
+          </picture>
+        </div>
+        <h1 id="final-heading">🏁 Quiz Complete!</h1>
+
+        <div class="final-personal-stats">
+          <div><span id="final-my-rank">–</span><label>Your Rank</label></div>
+          <div><span id="final-my-score">0</span><label>Your Score</label></div>
+          <div><span id="final-my-group-rank">–</span><label>Group Rank</label></div>
+        </div>
+
+        <div class="achievement-row" id="final-achievement-row"></div>
+
+        <p class="final-champion-note" id="final-champion-note"></p>
+
+        <div class="session-block session-block-inline" id="final-session-block">
+          <p class="session-type" data-session-type></p>
+          <p class="session-presented-by">Hosted by <span data-session-presented-by></span></p>
+        </div>
+
+        <p class="final-note">Thank you for participating — केन्द्रीय विद्यालय संगठन, ZIET Bhubaneswar</p>
+      </div>
+    </section>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/shared/countdown.js"></script>
+  <script src="/shared/confetti.js"></script>
+  <script src="/shared/splash.js"></script>
+  <script src="/shared/icons.js"></script>
+  <script src="/shared/emblems.js"></script>
+  <script src="student.js"></script>
+</body>
+</html>

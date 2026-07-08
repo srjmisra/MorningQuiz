@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#0b0f1a" />
+<title>MorningQuiz — Teacher</title>
+<link rel="stylesheet" href="/shared/theme.css" />
+<link rel="stylesheet" href="teacher.css" />
+</head>
+<body>
+  <div id="splash-screen" class="splash-screen">
+    <div class="brand-logo-frame">
+      <picture>
+        <source srcset="/shared/assets/images/kvs-logo.webp" type="image/webp" />
+        <img class="brand-logo" src="/shared/assets/images/kvs-logo.png" alt="Kendriya Vidyalaya Sangathan" />
+      </picture>
+    </div>
+    <div class="pulse-dot"></div>
+  </div>
+
+  <div class="animated-bg"><span></span><span></span><span></span></div>
+  <div id="toast-container" class="toast-container"></div>
+  <div id="celebration-overlay" class="celebration-overlay"></div>
+
+  <div class="brand-chip">
+    <picture>
+      <source srcset="/shared/assets/images/kvs-logo.webp" type="image/webp" />
+      <img class="brand-chip-logo" src="/shared/assets/images/kvs-logo.png" alt="Kendriya Vidyalaya Sangathan" />
+    </picture>
+    <span class="brand-chip-text"><strong>KVS · ZIET Bhubaneswar</strong><span class="brand-chip-sub">Code to Career · PGT(CS)</span></span>
+    <span class="connection-dot" id="connection-dot" role="status" aria-label="Connected"></span>
+  </div>
+
+  <div class="session-badge-corner" id="session-badge-corner">
+    <span class="icon" data-icon="trophy" data-icon-size="12"></span> Hosted by <span data-session-presented-by></span>
+  </div>
+
+  <div class="app-shell">
+    <section id="view-welcome" class="view view-active">
+      <div class="welcome-screen">
+        <div class="brand-logo-frame">
+          <picture>
+            <source srcset="/shared/assets/images/kvs-logo.webp" type="image/webp" />
+            <img class="brand-logo" src="/shared/assets/images/kvs-logo.png" alt="Kendriya Vidyalaya Sangathan logo" />
+          </picture>
+        </div>
+        <p class="kicker" id="welcome-org">Kendriya Vidyalaya Sangathan</p>
+        <p class="brand-hindi" id="welcome-org-hindi"></p>
+        <p class="kicker-sub" id="welcome-institute">ZIET Bhubaneswar</p>
+        <p class="brand-hindi" id="welcome-institute-hindi"></p>
+        <p class="brand-caption" id="welcome-governing-body"></p>
+
+        <div class="brand-divider"></div>
+
+        <h1 id="welcome-title">From Code to Career</h1>
+        <p class="welcome-programme" id="welcome-programme"></p>
+
+        <div class="session-block" id="welcome-session-block">
+          <p class="session-type" data-session-type></p>
+          <p class="session-presented-label">Hosted by</p>
+          <p class="session-presented-by"><span class="icon" data-icon="trophy" data-icon-size="16"></span> <span data-session-presented-by></span></p>
+        </div>
+
+        <p class="welcome-meta" id="welcome-venue"></p>
+        <p class="welcome-meta" id="welcome-date"></p>
+        <div class="welcome-stats">
+          <div class="stat-pill"><span id="welcome-total-participants">0</span><label>Participants</label></div>
+          <div class="stat-pill"><span id="welcome-total-groups">0</span><label>Groups</label></div>
+        </div>
+        <button id="start-event-btn" class="btn-primary btn-large">Start Event</button>
+      </div>
+    </section>
+
+    <section id="view-lobby" class="view">
+      <div class="lobby-top">
+        <div class="glass-card qr-card">
+          <div id="qr-code-holder" class="qr-code-holder"></div>
+          <div class="room-code-block">
+            <span class="room-code-label">Room Code</span>
+            <span class="room-code-value" id="room-code-display"></span>
+          </div>
+          <p class="join-url" id="join-url-display"></p>
+        </div>
+
+        <div class="glass-card counts-card">
+          <div class="count-block">
+            <span class="count-value" id="joined-count">0</span>
+            <span class="count-label">Joined</span>
+          </div>
+          <div class="count-block">
+            <span class="count-value" id="remaining-count">0</span>
+            <span class="count-label">Remaining</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="group-grid" class="group-grid"></div>
+
+      <p id="all-ready-banner" class="all-ready-banner"></p>
+
+      <button id="start-quiz-btn" class="btn-primary btn-large start-quiz-btn" disabled>Start Quiz</button>
+    </section>
+
+    <section id="view-intro" class="view">
+      <div class="intro-screen">
+        <p class="intro-question-number" id="intro-question-number"></p>
+        <p class="intro-category" id="intro-category"></p>
+        <div class="intro-countdown" id="intro-countdown">3</div>
+      </div>
+    </section>
+
+    <section id="view-question" class="view">
+      <div class="question-topbar">
+        <span class="question-progress" id="question-progress"></span>
+        <div class="timer-ring timer-ring-lg" id="timer-ring">
+          <svg viewBox="0 0 100 100">
+            <circle class="timer-track" cx="50" cy="50" r="45"></circle>
+            <circle class="timer-fill" id="timer-fill-circle" cx="50" cy="50" r="45"></circle>
+          </svg>
+          <span class="timer-value" id="timer-value"></span>
+        </div>
+      </div>
+
+      <div class="question-body glass-card">
+        <h2 id="question-text"></h2>
+        <img id="question-image" class="question-image" alt="" hidden />
+      </div>
+
+      <div class="answer-grid" id="answer-grid"></div>
+
+      <div class="locked-overlay" id="locked-overlay">
+        <div class="locked-content">
+          <span class="icon" data-icon="lock" data-icon-size="40"></span>
+          <p>Answers Locked</p>
+        </div>
+      </div>
+
+      <button id="reveal-btn" class="reveal-btn">Reveal Answer</button>
+    </section>
+
+    <section id="view-results" class="view">
+      <div class="results-header glass-card">
+        <p class="results-correct-label">Correct Answer</p>
+        <h2 id="results-correct-answer"></h2>
+      </div>
+
+      <div class="knowledge-card" id="knowledge-card">
+        <p class="km-label">Learning Moment</p>
+        <p class="km-text" id="knowledge-text"></p>
+      </div>
+
+      <div class="analytics-panel" id="analytics-panel"></div>
+
+      <div class="group-progress-reveal" id="group-progress-reveal"></div>
+
+      <div class="leaderboards-row" id="leaderboards-row">
+        <div class="leaderboard-col glass-card">
+          <h3><span class="icon" data-icon="medal" data-icon-size="17"></span> Individual Leaderboard</h3>
+          <ol id="individual-leaderboard"></ol>
+        </div>
+        <div class="leaderboard-col glass-card">
+          <h3><span class="icon" data-icon="trophy" data-icon-size="17"></span> Group Leaderboard</h3>
+          <ol id="group-leaderboard"></ol>
+        </div>
+      </div>
+
+      <div class="hof-grid" id="hof-grid"></div>
+
+      <button id="next-question-btn" class="btn-primary next-btn">Next Question</button>
+    </section>
+
+    <section id="view-final" class="view view-final-celebration">
+      <div class="final-hero">
+        <div class="brand-logo-frame brand-logo-frame-sm">
+          <picture>
+            <source srcset="/shared/assets/images/kvs-logo.webp" type="image/webp" />
+            <img class="brand-logo" src="/shared/assets/images/kvs-logo.png" alt="Kendriya Vidyalaya Sangathan logo" />
+          </picture>
+        </div>
+        <p class="final-kicker">Code to Career · PGT(CS) In-Service Course</p>
+        <h1><span class="icon" data-icon="trophy" data-icon-size="44"></span> Quiz Complete</h1>
+      </div>
+
+      <div class="podium-row" id="podium-row"></div>
+
+      <div class="champion-row" id="champion-row"></div>
+
+      <div class="hof-grid visible" id="final-hof-grid"></div>
+
+      <div class="leaderboards-row visible">
+        <div class="leaderboard-col glass-card">
+          <h3><span class="icon" data-icon="medal" data-icon-size="17"></span> Final Individual Rankings</h3>
+          <ol id="final-individual-rankings" class="scrollable-list"></ol>
+        </div>
+        <div class="leaderboard-col glass-card">
+          <h3><span class="icon" data-icon="trophy" data-icon-size="17"></span> Final Group Rankings</h3>
+          <ol id="final-group-rankings"></ol>
+        </div>
+      </div>
+
+      <div class="session-block session-block-inline" id="final-session-block" style="text-align: center;">
+        <p class="session-type" data-session-type></p>
+        <p class="session-presented-by">Hosted by <span data-session-presented-by></span></p>
+      </div>
+
+      <p class="final-thanks">Thank you for participating — केन्द्रीय विद्यालय संगठन, ZIET Bhubaneswar</p>
+    </section>
+  </div>
+
+  <div id="stats-bar" class="stats-bar">
+    <div class="stat-chip"><span id="stat-question">–</span><label>Question</label></div>
+    <div class="stat-chip"><span id="stat-answered">0</span><label>Answered</label></div>
+    <div class="stat-chip"><span id="stat-pending">0</span><label>Pending</label></div>
+    <div class="stat-chip"><span id="stat-accuracy">0%</span><label>Avg Accuracy</label></div>
+    <div class="stat-chip"><span id="stat-fastest">–</span><label>Fastest</label></div>
+    <div class="stat-chip"><span id="stat-leading-group">–</span><label>Leading Group</label></div>
+    <div class="stat-chip"><span id="stat-leading-individual">–</span><label>Leading Individual</label></div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/shared/qrcode.min.js"></script>
+  <script src="/shared/confetti.js"></script>
+  <script src="/shared/countdown.js"></script>
+  <script src="/shared/animate.js"></script>
+  <script src="/shared/splash.js"></script>
+  <script src="/shared/icons.js"></script>
+  <script src="/shared/emblems.js"></script>
+  <script src="teacher.js"></script>
+</body>
+</html>
