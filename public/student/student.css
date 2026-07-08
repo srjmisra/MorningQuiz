@@ -52,6 +52,17 @@
   font-size: clamp(24px, 6vw, 32px);
 }
 
+/* On phones the .view container goes edge-to-edge (its 480px cap no longer
+   applies), which puts this header directly beneath the fixed brand-chip
+   pinned to the viewport's top-left corner. Give the header enough top
+   clearance so the two never overlap; desktop's centered card sits far to
+   the right of the corner chip already, so it needs no extra offset. */
+@media (max-width: 480px) {
+  .join-header {
+    padding-top: 48px;
+  }
+}
+
 .subtitle {
   color: var(--text-secondary);
   font-size: 14px;
@@ -66,48 +77,6 @@
   font-size: 13px;
   color: var(--text-secondary);
   margin-bottom: 6px;
-}
-
-.group-tabs {
-  display: flex;
-  gap: 8px;
-  overflow-x: auto;
-  padding-bottom: 8px;
-  margin-bottom: 14px;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-}
-
-.group-tabs::-webkit-scrollbar {
-  display: none;
-}
-
-.group-tab {
-  flex: 0 0 auto;
-  padding: 10px 16px;
-  min-height: 44px;
-  border-radius: 999px;
-  border: 1px solid var(--glass-border);
-  background: rgba(255, 255, 255, 0.05);
-  color: var(--text-primary);
-  font-size: 14px;
-  white-space: nowrap;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  cursor: pointer;
-  transition: background 0.15s ease, transform 0.1s ease;
-}
-
-.group-tab:active {
-  transform: scale(0.96);
-}
-
-.group-tab.active {
-  background: var(--tab-color, var(--accent-blue));
-  border-color: transparent;
-  color: #fff;
-  font-weight: 600;
 }
 
 .participant-list {
@@ -132,6 +101,9 @@
   justify-content: space-between;
   align-items: center;
   gap: 10px;
+  /* Belt-and-braces: guarantees the group badge can never visually spill
+     past the card's rounded edge, no matter the content. */
+  overflow: hidden;
   cursor: pointer;
   transition: background 0.15s ease, transform 0.1s ease;
 }
@@ -143,6 +115,7 @@
 
 .participant-name {
   min-width: 0;
+  flex: 1 1 auto;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -151,9 +124,17 @@
 }
 
 .participant-meta {
-  flex-shrink: 0;
+  /* Fixed-size badge that never shrinks or wraps, so the group label stays
+     fully readable — the name (flexible, ellipsis) gives way instead. */
+  flex: 0 0 auto;
+  white-space: nowrap;
   font-size: 12px;
-  color: var(--text-secondary);
+  font-weight: 600;
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--glass-border);
+  border-radius: 999px;
+  padding: 4px 10px;
 }
 
 .participant-empty {

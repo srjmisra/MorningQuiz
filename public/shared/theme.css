@@ -213,10 +213,6 @@ input {
     transform: translateX(2px);
   }
 
-  .group-tab:hover {
-    background: rgba(255, 255, 255, 0.1);
-  }
-
   .glass-card.interactive:hover {
     transform: translateY(-3px);
     box-shadow: var(--shadow-md);

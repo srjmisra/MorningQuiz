@@ -1,7 +1,6 @@
 const socket = io();
 
 let roster = { participants: [], groups: [], event: {} };
-let selectedGroup = null; // null = All
 let searchTerm = "";
 let selectedParticipant = null;
 let joinedRoomCode = null;
@@ -37,7 +36,6 @@ const els = {
 
   roomCodeInput: document.getElementById("room-code-input"),
   searchInput: document.getElementById("search-input"),
-  groupTabs: document.getElementById("group-tabs"),
   participantList: document.getElementById("participant-list"),
   confirmName: document.getElementById("confirm-name"),
   confirmKv: document.getElementById("confirm-kv"),
@@ -99,31 +97,9 @@ function groupById(id) {
   return roster.groups.find((g) => g.id === id);
 }
 
-function renderGroupTabs() {
-  const tabs = [{ id: null, name: "All", icon: "👥", color: "#64748b" }, ...roster.groups];
-  els.groupTabs.innerHTML = "";
-  for (const tab of tabs) {
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.className = "group-tab" + (selectedGroup === tab.id ? " active" : "");
-    btn.style.setProperty("--tab-color", tab.color);
-    btn.textContent = tab.icon ? `${tab.icon} ${tab.name}` : tab.name;
-    btn.addEventListener("click", () => {
-      selectedGroup = tab.id;
-      renderGroupTabs();
-      renderParticipantList();
-    });
-    els.groupTabs.appendChild(btn);
-  }
-}
-
 function renderParticipantList() {
   const term = searchTerm.trim().toLowerCase();
-  const filtered = roster.participants.filter((p) => {
-    const matchesGroup = selectedGroup === null || p.group === selectedGroup;
-    const matchesSearch = !term || p.name.toLowerCase().includes(term);
-    return matchesGroup && matchesSearch;
-  });
+  const filtered = roster.participants.filter((p) => !term || p.name.toLowerCase().includes(term));
 
   els.participantList.innerHTML = "";
   if (filtered.length === 0) {
@@ -458,7 +434,6 @@ async function init() {
     const res = await fetch("/api/roster");
     roster = await res.json();
     renderParticipantWelcome();
-    renderGroupTabs();
     renderParticipantList();
     renderSessionBranding(roster.event.session);
 
