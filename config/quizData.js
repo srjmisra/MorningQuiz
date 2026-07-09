@@ -11,7 +11,7 @@ module.exports = {
       options: ["Faster transmission", "Larger address space", "Simpler hardware", "Lower bandwidth"],
       correctIndex: 1,
       explanation: "IPv6 was introduced mainly to solve IPv4 address exhaustion by expanding the address space from 32 bits to 128 bits.",
-      timeLimitSeconds: 15
+      timeLimitSeconds: 20
     },
     {
       category: "Lesson Planning",
@@ -20,7 +20,7 @@ module.exports = {
       options: ["Skills", "Attendance", "Homework", "Notes"],
       correctIndex: 0,
       explanation: "Competency-based teaching centers on building measurable skills and abilities in learners, not just covering content.",
-      timeLimitSeconds: 15
+      timeLimitSeconds: 20
     },
     {
       category: "Computer Networks",
@@ -29,7 +29,7 @@ module.exports = {
       options: ["Device", "Application", "Network", "Protocol"],
       correctIndex: 1,
       explanation: "A port number identifies a specific application or service running on a device, while the IP address identifies the device itself.",
-      timeLimitSeconds: 15
+      timeLimitSeconds: 20
     },
     {
       category: "Cyber Physical Systems & IoT",
@@ -38,7 +38,7 @@ module.exports = {
       options: ["Sensor", "Browser", "Database", "Compiler"],
       correctIndex: 0,
       explanation: "Sensors capture real-world physical data — such as temperature or motion — and feed it into a Cyber Physical System.",
-      timeLimitSeconds: 15
+      timeLimitSeconds: 20
     },
     {
       category: "Condemnation of Computer Articles",
@@ -56,7 +56,7 @@ module.exports = {
       options: ["FTP", "HTTP", "SMTP", "DNS"],
       correctIndex: 1,
       explanation: "HTTP (HyperText Transfer Protocol) is the application-layer protocol used to transfer web pages.",
-      timeLimitSeconds: 15
+      timeLimitSeconds: 20
     },
     {
       category: "Cyber Physical Systems & IoT",
@@ -65,7 +65,7 @@ module.exports = {
       options: ["Sensing", "Action", "Storage", "Routing"],
       correctIndex: 1,
       explanation: "An actuator converts a control signal into physical action, such as moving a motor or opening a valve.",
-      timeLimitSeconds: 15
+      timeLimitSeconds: 20
     },
     {
       category: "Computer Networks",
@@ -74,7 +74,7 @@ module.exports = {
       options: ["OSI", "TCP/IP", "FTP", "SMTP"],
       correctIndex: 1,
       explanation: "TCP/IP is the protocol suite the modern Internet is built on; OSI is a conceptual reference model, not a deployed suite.",
-      timeLimitSeconds: 15
+      timeLimitSeconds: 20
     },
     {
       category: "Lesson Planning",
@@ -83,7 +83,7 @@ module.exports = {
       options: ["Measurable", "Lengthy", "General", "Difficult"],
       correctIndex: 0,
       explanation: "Good learning outcomes are specific and measurable, so achievement can be clearly assessed.",
-      timeLimitSeconds: 15
+      timeLimitSeconds: 20
     },
     {
       category: "Computer Networks",
@@ -101,7 +101,7 @@ module.exports = {
       options: ["AI", "IoT", "Blockchain", "Big Data"],
       correctIndex: 1,
       explanation: "Kevin Ashton coined the term \"Internet of Things\" in 1999 while working on RFID technology.",
-      timeLimitSeconds: 15
+      timeLimitSeconds: 20
     },
     {
       category: "Condemnation of Computer Articles",
@@ -119,7 +119,7 @@ module.exports = {
       options: ["ISP", "Organization", "Country", "City"],
       correctIndex: 1,
       explanation: "An intranet is a private network restricted to use within a single organization.",
-      timeLimitSeconds: 15
+      timeLimitSeconds: 20
     },
     {
       category: "Cyber Physical Systems & IoT",
@@ -128,7 +128,7 @@ module.exports = {
       options: ["Programs", "Physical objects", "Documents", "Websites"],
       correctIndex: 1,
       explanation: "IoT connects physical objects and devices embedded with sensors so they can exchange data over a network.",
-      timeLimitSeconds: 15
+      timeLimitSeconds: 20
     },
     {
       category: "Computer Networks",
@@ -137,7 +137,7 @@ module.exports = {
       options: ["LAN", "Network of networks", "Database", "Server"],
       correctIndex: 1,
       explanation: "The Internet is a global \"network of networks\" connecting countless smaller networks together.",
-      timeLimitSeconds: 15
+      timeLimitSeconds: 20
     }
   ]
 };
