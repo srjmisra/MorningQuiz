@@ -2,141 +2,132 @@
 // image is optional — set to a path like "/shared/images/foo.png" or leave null.
 
 module.exports = {
-  title: "Code to Career — CS & IP Quiz",
+  title: "Artificial Intelligence and Computer Vision Quiz",
   questions: [
     {
-      category: "Computer Networks",
-      question: "Why was IPv6 developed as the successor to IPv4?",
+      category: "Artificial Intelligence",
+      question: "Which of the following is a branch of Artificial Intelligence?",
       image: null,
-      options: ["Faster transmission", "Larger address space", "Simpler hardware", "Lower bandwidth"],
-      correctIndex: 1,
-      explanation: "IPv6 was introduced mainly to solve IPv4 address exhaustion by expanding the address space from 32 bits to 128 bits.",
-      timeLimitSeconds: 20
-    },
-    {
-      category: "Lesson Planning",
-      question: "Competency-based teaching primarily focuses on developing:",
-      image: null,
-      options: ["Skills", "Attendance", "Homework", "Notes"],
+      options: ["Machine Learning", "Cyber forensics", "Full-Stack Development", "Network Design"],
       correctIndex: 0,
-      explanation: "Competency-based teaching centers on building measurable skills and abilities in learners, not just covering content.",
+      explanation: "Machine Learning is a core sub-area of AI, alongside Computer Vision, Robotics, and NLP, used to train models for specific tasks.",
       timeLimitSeconds: 20
     },
     {
-      category: "Computer Networks",
-      question: "A port number is used to identify a:",
+      category: "Artificial Intelligence",
+      question: "What is the goal of Artificial Intelligence?",
       image: null,
-      options: ["Device", "Application", "Network", "Protocol"],
-      correctIndex: 1,
-      explanation: "A port number identifies a specific application or service running on a device, while the IP address identifies the device itself.",
+      options: ["To solve artificial problems", "To extract scientific causes", "To explain various sorts of intelligence", "To solve real-world problems"],
+      correctIndex: 2,
+      explanation: "Artificial Intelligence aims to explain and replicate the many different forms that intelligence can take.",
       timeLimitSeconds: 20
     },
     {
-      category: "Cyber Physical Systems & IoT",
-      question: "Which component collects data from the physical environment?",
+      category: "Artificial Intelligence",
+      question: "Into how many categories is the process of Artificial Intelligence typically divided?",
       image: null,
-      options: ["Sensor", "Browser", "Database", "Compiler"],
+      options: ["5 categories", "Based on the input provided", "3 categories", "Not categorized"],
+      correctIndex: 2,
+      explanation: "AI processes break down into three categories: sensing (gathering data), reasoning (processing it), and acting (producing a response).",
+      timeLimitSeconds: 20
+    },
+    {
+      category: "Artificial Intelligence",
+      question: "What is the function of an Artificial Intelligence \"Agent\"?",
+      image: null,
+      options: ["Mapping of goal sequence to an action", "Working without direct interference from people", "Mapping of percept sequence to an action", "Mapping of environment sequence to an action"],
+      correctIndex: 2,
+      explanation: "An agent function maps a sequence of percepts — what the agent has sensed — to an action, implemented via agent software.",
+      timeLimitSeconds: 20
+    },
+    {
+      category: "Artificial Intelligence",
+      question: "Which of the following is not a commonly used programming language for Artificial Intelligence?",
+      image: null,
+      options: ["Perl", "Java", "PROLOG", "LISP"],
       correctIndex: 0,
-      explanation: "Sensors capture real-world physical data — such as temperature or motion — and feed it into a Cyber Physical System.",
+      explanation: "Perl is a general-purpose scripting language, not one associated with AI development, unlike LISP, PROLOG, and Java.",
       timeLimitSeconds: 20
     },
     {
-      category: "Condemnation of Computer Articles",
-      question: "Which document is prepared to initiate the condemnation proposal?",
+      category: "Computer Vision",
+      question: "What is the primary goal of Computer Vision?",
       image: null,
-      options: ["CS-49", "BER", "Stock Register", "Gate Pass"],
+      options: ["To create computer hardware", "To enable computers to understand and interpret images and videos", "To improve internet speed", "To design computer networks"],
+      correctIndex: 1,
+      explanation: "Computer Vision is the AI field focused on enabling computers to analyze and interpret images and video.",
+      timeLimitSeconds: 20
+    },
+    {
+      category: "Computer Vision",
+      question: "Which of the following is an example of a Computer Vision application?",
+      image: null,
+      options: ["Spam email filtering", "Face recognition in smartphones", "Text translation", "Audio compression"],
+      correctIndex: 1,
+      explanation: "Face recognition uses facial features captured in images or video to identify or verify a person — a classic Computer Vision application.",
+      timeLimitSeconds: 20
+    },
+    {
+      category: "Computer Vision",
+      question: "In Computer Vision, an image is primarily represented as:",
+      image: null,
+      options: ["A collection of pixels", "A paragraph of text", "An audio signal", "A database table"],
       correctIndex: 0,
-      explanation: "Form CS-49 is the prescribed document used to initiate a condemnation proposal for computer articles.",
+      explanation: "Digital images are made up of pixels, tiny picture elements that store color or intensity values.",
       timeLimitSeconds: 20
     },
     {
-      category: "Computer Networks",
-      question: "Which application-layer protocol is most commonly associated with the World Wide Web?",
+      category: "Computer Vision",
+      question: "Which of the following tasks involves identifying and locating objects in an image?",
       image: null,
-      options: ["FTP", "HTTP", "SMTP", "DNS"],
-      correctIndex: 1,
-      explanation: "HTTP (HyperText Transfer Protocol) is the application-layer protocol used to transfer web pages.",
-      timeLimitSeconds: 20
-    },
-    {
-      category: "Cyber Physical Systems & IoT",
-      question: "In a Cyber Physical System, an actuator is responsible for:",
-      image: null,
-      options: ["Sensing", "Action", "Storage", "Routing"],
-      correctIndex: 1,
-      explanation: "An actuator converts a control signal into physical action, such as moving a motor or opening a valve.",
-      timeLimitSeconds: 20
-    },
-    {
-      category: "Computer Networks",
-      question: "Which protocol suite forms the foundation of the modern Internet?",
-      image: null,
-      options: ["OSI", "TCP/IP", "FTP", "SMTP"],
-      correctIndex: 1,
-      explanation: "TCP/IP is the protocol suite the modern Internet is built on; OSI is a conceptual reference model, not a deployed suite.",
-      timeLimitSeconds: 20
-    },
-    {
-      category: "Lesson Planning",
-      question: "A well-written learning outcome should be:",
-      image: null,
-      options: ["Measurable", "Lengthy", "General", "Difficult"],
+      options: ["Object Detection", "Data Compression", "Word Processing", "Spreadsheet Calculation"],
       correctIndex: 0,
-      explanation: "Good learning outcomes are specific and measurable, so achievement can be clearly assessed.",
+      explanation: "Object Detection both identifies objects in an image and locates them, typically by drawing bounding boxes around them.",
       timeLimitSeconds: 20
     },
     {
-      category: "Computer Networks",
-      question: "Which layer provides end-to-end communication between applications?",
+      category: "Computer Vision",
+      question: "Which of the following best describes image classification in Computer Vision?",
       image: null,
-      options: ["Network", "Transport", "Data Link", "Physical"],
-      correctIndex: 1,
-      explanation: "The Transport layer (e.g. TCP/UDP) provides end-to-end communication between applications running on different hosts.",
+      options: ["Identifying the category of the entire image", "Finding the exact location of every object in an image", "Converting an image into text", "Improving the brightness of an image"],
+      correctIndex: 0,
+      explanation: "Image classification assigns a single label to an entire image, unlike object detection, which also locates objects within it.",
       timeLimitSeconds: 20
     },
     {
-      category: "Cyber Physical Systems & IoT",
-      question: "Kevin Ashton is best known for introducing the term:",
+      category: "Computer Vision",
+      question: "Which branch of Artificial Intelligence focuses on enabling computers to interpret and analyze visual information from images and videos?",
       image: null,
-      options: ["AI", "IoT", "Blockchain", "Big Data"],
+      options: ["Natural Language Processing (NLP)", "Computer Vision", "Robotics", "Expert Systems"],
       correctIndex: 1,
-      explanation: "Kevin Ashton coined the term \"Internet of Things\" in 1999 while working on RFID technology.",
+      explanation: "Computer Vision is the branch of AI that enables computers to process and interpret visual information from images and video.",
       timeLimitSeconds: 20
     },
     {
-      category: "Condemnation of Computer Articles",
-      question: "What is the first step in the condemnation process?",
+      category: "Computer Vision",
+      question: "Which of the following best describes image classification in Computer Vision?",
       image: null,
-      options: ["Inspection", "Identification", "Approval", "Disposal"],
-      correctIndex: 1,
-      explanation: "The condemnation process begins with identifying the unserviceable articles, before inspection, approval, and disposal follow.",
+      options: ["Identifying the category of the entire image", "Finding the exact location of every object in an image", "Converting an image into text", "Improving the brightness of an image"],
+      correctIndex: 0,
+      explanation: "Image classification assigns a single label to an entire image, unlike object detection, which also locates objects within it.",
       timeLimitSeconds: 20
     },
     {
-      category: "Computer Networks",
-      question: "An intranet is primarily intended for use within an:",
+      category: "Computer Vision",
+      question: "Which branch of Artificial Intelligence focuses on enabling computers to interpret and analyze visual information from images and videos?",
       image: null,
-      options: ["ISP", "Organization", "Country", "City"],
+      options: ["Natural Language Processing (NLP)", "Computer Vision", "Robotics", "Expert Systems"],
       correctIndex: 1,
-      explanation: "An intranet is a private network restricted to use within a single organization.",
+      explanation: "Computer Vision is the branch of AI that enables computers to process and interpret visual information from images and video.",
       timeLimitSeconds: 20
     },
     {
-      category: "Cyber Physical Systems & IoT",
-      question: "The Internet of Things (IoT) primarily connects:",
+      category: "Computer Vision",
+      question: "Which of the following is the correct sequence in a basic Computer Vision workflow?",
       image: null,
-      options: ["Programs", "Physical objects", "Documents", "Websites"],
+      options: ["Decision → Image Capture → Image Processing → Feature Extraction", "Image Capture → Image Processing → Feature Extraction → Decision/Recognition", "Feature Extraction → Image Capture → Decision → Image Processing", "Image Processing → Decision → Image Capture → Feature Extraction"],
       correctIndex: 1,
-      explanation: "IoT connects physical objects and devices embedded with sensors so they can exchange data over a network.",
-      timeLimitSeconds: 20
-    },
-    {
-      category: "Computer Networks",
-      question: "The Internet is best described as a:",
-      image: null,
-      options: ["LAN", "Network of networks", "Database", "Server"],
-      correctIndex: 1,
-      explanation: "The Internet is a global \"network of networks\" connecting countless smaller networks together.",
+      explanation: "A typical Computer Vision pipeline runs image capture, then image processing, then feature extraction, before a final decision or recognition step.",
       timeLimitSeconds: 20
     }
   ]

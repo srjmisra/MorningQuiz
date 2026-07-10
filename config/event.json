@@ -6,7 +6,7 @@
   "instituteEnglishFull": "Zonal Institute of Education & Training, Bhubaneswar",
   "governingBody": "An Autonomous Body under Ministry of Education, Government of India",
   "workshopTitle": "From Code to Career: Strengthening PGT(CS) for teaching of CS & IP",
-  "tagline": "From Code to Career",
+  "tagline": "Artificial Intelligence and Computer Vision Quiz",
   "programme": "Strengthening PGT(CS) for Teaching of C.S. & I.P.",
   "venue": "ZIET, Bhubaneswar",
   "dateRange": "06–10 July 2026",
@@ -16,6 +16,6 @@
   "session": {
     "enabled": true,
     "type": "Morning Assembly",
-    "presentedBy": "Group – 3"
+    "presentedBy": "Group 4"
   }
 }

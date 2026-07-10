@@ -1,8 +1,8 @@
 [
   { "id": 1, "name": "Group 1", "color": "#2563EB" },
   { "id": 2, "name": "Group 2", "color": "#F59E0B" },
-  { "id": 3, "name": "Group 3", "color": "#10B981", "isHost": true },
-  { "id": 4, "name": "Group 4", "color": "#EF4444" },
+  { "id": 3, "name": "Group 3", "color": "#10B981" },
+  { "id": 4, "name": "Group 4", "color": "#EF4444", "isHost": true },
   { "id": 5, "name": "Group 5", "color": "#8B5CF6" },
   { "id": 6, "name": "Group 6", "color": "#06B6D4" },
   { "id": 7, "name": "Group 7", "color": "#EC4899" },
