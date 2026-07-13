@@ -19,21 +19,25 @@ function clearTimer(room) {
   }
 }
 
-function startQuiz(io) {
-  const room = roomManager.getRoom();
+// Public entry point (called from socketHandlers) — resolves the room once
+// from roomCode, then passes the resolved object down through every internal
+// helper below instead of each one re-querying roomManager independently.
+function startQuiz(io, roomCode) {
+  const room = roomManager.getRoom(roomCode);
   if (!room) return;
   room.currentQuestionIndex = -1;
-  goToNextQuestion(io);
+  goToNextQuestion(io, room);
 }
 
-function goToNextQuestion(io) {
-  const room = roomManager.getRoom();
-  if (!room) return;
+// Internal helper — takes the resolved room directly so the setTimeout
+// closure below captures this specific room, not "whatever roomCode resolves
+// to when the timer fires."
+function goToNextQuestion(io, room) {
   clearTimer(room);
   room.currentQuestionIndex += 1;
 
   if (room.currentQuestionIndex >= dataStore.quiz.questions.length) {
-    finishEvent(io);
+    finishEvent(io, room);
     return;
   }
 
@@ -50,12 +54,10 @@ function goToNextQuestion(io) {
   room.lastIntroPayload = introPayload;
   io.to(room.code).emit("game:questionIntro", introPayload);
 
-  room.questionTimer = setTimeout(() => beginQuestion(io), INTRO_DURATION_MS);
+  room.questionTimer = setTimeout(() => beginQuestion(io, room), INTRO_DURATION_MS);
 }
 
-function beginQuestion(io) {
-  const room = roomManager.getRoom();
-  if (!room) return;
+function beginQuestion(io, room) {
   const q = dataStore.quiz.questions[room.currentQuestionIndex];
 
   room.status = "question";
@@ -75,11 +77,13 @@ function beginQuestion(io) {
 
   io.to(room.code).emit("game:answerCount", buildLiveStats(room));
 
-  room.questionTimer = setTimeout(() => endQuestion(io), q.timeLimitSeconds * 1000);
+  room.questionTimer = setTimeout(() => endQuestion(io, room), q.timeLimitSeconds * 1000);
 }
 
-function submitAnswer(io, socket, payload) {
-  const room = roomManager.getRoom();
+// Public entry point — receives roomCode explicitly (via socket.data on the
+// calling socket) rather than assuming "the" room.
+function submitAnswer(io, roomCode, socket, payload) {
+  const room = roomManager.getRoom(roomCode);
   if (!room || room.status !== "question") return { ok: false, error: "notOpen" };
 
   const participantId = socket.data.participantId;
@@ -114,7 +118,7 @@ function submitAnswer(io, socket, payload) {
 
   room.answeredThisQuestion.add(participantId);
   io.to(room.code).emit("game:answerCount", buildLiveStats(room));
-  maybeAutoEndQuestion(io);
+  maybeAutoEndQuestion(io, room);
 
   const ranked = [...room.players.values()].sort((a, b) => b.score - a.score);
   const currentRank = ranked.findIndex((p) => p.participantId === participantId) + 1;
@@ -129,17 +133,18 @@ function submitAnswer(io, socket, payload) {
   };
 }
 
-function maybeAutoEndQuestion(io) {
-  const room = roomManager.getRoom();
+// Public entry point (also called from socketHandlers' disconnect handler,
+// which resolves the room first) — takes the room directly since both call
+// sites already have it in hand.
+function maybeAutoEndQuestion(io, room) {
   if (!room || room.status !== "question") return;
   const total = connectedPlayers(room).length;
   if (total > 0 && room.answeredThisQuestion.size >= total) {
-    endQuestion(io);
+    endQuestion(io, room);
   }
 }
 
-function endQuestion(io) {
-  const room = roomManager.getRoom();
+function endQuestion(io, room) {
   if (!room || room.status !== "question") return;
   clearTimer(room);
 
@@ -152,17 +157,16 @@ function endQuestion(io) {
 
   room.status = "locked";
   io.to(room.code).emit("game:answersLocked", {});
-  room.questionTimer = setTimeout(() => revealResults(io), LOCK_REVEAL_DELAY_MS);
+  room.questionTimer = setTimeout(() => revealResults(io, room), LOCK_REVEAL_DELAY_MS);
 }
 
-function forceReveal(io) {
-  const room = roomManager.getRoom();
+function forceReveal(io, roomCode) {
+  const room = roomManager.getRoom(roomCode);
   if (!room || room.status !== "question") return;
-  endQuestion(io);
+  endQuestion(io, room);
 }
 
-function revealResults(io) {
-  const room = roomManager.getRoom();
+function revealResults(io, room) {
   if (!room) return;
   clearTimer(room);
   room.status = "results";
@@ -223,22 +227,21 @@ function computeQuestionAnalytics(room, questionIndex) {
   };
 }
 
-function nextQuestion(io) {
-  const room = roomManager.getRoom();
+function nextQuestion(io, roomCode) {
+  const room = roomManager.getRoom(roomCode);
   if (!room || room.status !== "results") return;
-  goToNextQuestion(io);
+  goToNextQuestion(io, room);
 }
 
 // Lets the teacher finish early from any in-progress point — reuses the
 // exact same finishEvent() path a natural finish already takes.
-function endQuizEarly(io) {
-  const room = roomManager.getRoom();
+function endQuizEarly(io, roomCode) {
+  const room = roomManager.getRoom(roomCode);
   if (!room || room.status === "ended") return;
-  finishEvent(io);
+  finishEvent(io, room);
 }
 
-function finishEvent(io) {
-  const room = roomManager.getRoom();
+function finishEvent(io, room) {
   if (!room) return;
   clearTimer(room);
   room.status = "ended";
@@ -376,10 +379,12 @@ function buildLiveStats(room) {
 
 // Lets a teacher who refreshed mid-event catch back up instead of the app
 // defaulting to a blank Welcome screen while the room keeps running headless.
+// Already room-scoped (takes room directly) — roomManager.reclaimTeacher()
+// resolves which room before calling this.
 function getReconnectSnapshot(room) {
   const snapshot = {
     status: room.status,
-    lobbySnapshot: room.status === "lobby" ? roomManager.lobbySnapshot() : null,
+    lobbySnapshot: room.status === "lobby" ? roomManager.lobbySnapshot(room.code) : null,
     lastIntroPayload: room.lastIntroPayload || null,
     lastQuestionStartPayload: room.lastQuestionStartPayload || null,
     lastQuestionEndPayload: room.lastQuestionEndPayload || null,

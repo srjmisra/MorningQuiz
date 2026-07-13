@@ -1,15 +1,28 @@
 const dataStore = require("./dataStore");
 
-// Single active room for the whole event — this is one-event software, not multi-tenant.
-let room = null;
+// Registry of active rooms, keyed by room code. UniversalQuiz v2 still only
+// ever allows one entry — enforced solely via hasAnyActiveRoom() in
+// socketHandlers.js — but the storage itself has no such limit baked in, so
+// lifting that restriction later means removing one guard, not restructuring
+// how rooms are stored.
+const rooms = new Map();
 
 function generateCode() {
-  return String(Math.floor(100000 + Math.random() * 900000));
+  let code;
+  do {
+    code = String(Math.floor(100000 + Math.random() * 900000));
+  } while (rooms.has(code));
+  return code;
+}
+
+function hasAnyActiveRoom() {
+  return rooms.size > 0;
 }
 
 function createRoom(teacherSocketId) {
-  room = {
-    code: generateCode(),
+  const code = generateCode();
+  const room = {
+    code,
     teacherSocketId,
     status: "lobby",
     currentQuestionIndex: -1,
@@ -18,24 +31,37 @@ function createRoom(teacherSocketId) {
     answeredThisQuestion: new Set(),
     players: new Map() // participantId -> PlayerState
   };
+  rooms.set(code, room);
   return room;
 }
 
-function getRoom() {
-  return room;
+function getRoom(roomCode) {
+  return rooms.get(roomCode) || null;
+}
+
+// Only one room can exist in v2, so a reconnecting teacher who doesn't know
+// a room code yet (e.g. socket.data hasn't been populated on this fresh
+// connection) can safely reclaim whichever single room is active. Once a
+// roomCode is known it's used directly — this is also the path multiple
+// concurrent rooms will require later.
+function getSoleActiveRoom() {
+  if (rooms.size !== 1) return null;
+  return rooms.values().next().value;
 }
 
 // Lets the teacher's browser reclaim control of the already-running room
 // after a refresh/crash, instead of the app defaulting to "create a new
 // room" and orphaning every connected student.
-function reclaimTeacher(socketId) {
+function reclaimTeacher(socketId, roomCode) {
+  const room = roomCode ? getRoom(roomCode) : getSoleActiveRoom();
   if (!room) return null;
   room.teacherSocketId = socketId;
   return room;
 }
 
 function joinPlayer(roomCode, participantId, socketId) {
-  if (!room || room.code !== roomCode) {
+  const room = getRoom(roomCode);
+  if (!room) {
     return { ok: false, reason: "notFound" };
   }
 
@@ -82,26 +108,35 @@ function joinPlayer(roomCode, participantId, socketId) {
   return { ok: true, player, participant };
 }
 
-// Full teardown: broadcasts a reset notice, drops every socket from the
-// room, then clears server state entirely so a new quiz can start clean —
-// no process restart required.
-function resetSession(io) {
+// Full teardown: broadcasts a reset notice, cancels any pending
+// phase-transition timer (so a stale intro/lock/reveal callback can't fire
+// against a room that no longer exists in the registry), drops every socket
+// from the room, then removes it from the registry so a new quiz can start
+// clean — no process restart required.
+function resetSession(io, roomCode) {
+  const room = getRoom(roomCode);
   if (!room) return;
-  const code = room.code;
-  io.to(code).emit("session:reset", {});
 
-  const socketsInRoom = io.sockets.adapter.rooms.get(code);
+  if (room.questionTimer) {
+    clearTimeout(room.questionTimer);
+    room.questionTimer = null;
+  }
+
+  io.to(roomCode).emit("session:reset", {});
+
+  const socketsInRoom = io.sockets.adapter.rooms.get(roomCode);
   if (socketsInRoom) {
     for (const socketId of [...socketsInRoom]) {
       const s = io.sockets.sockets.get(socketId);
-      if (s) s.leave(code);
+      if (s) s.leave(roomCode);
     }
   }
 
-  room = null;
+  rooms.delete(roomCode);
 }
 
-function disconnectBySocketId(socketId) {
+function disconnectBySocketId(roomCode, socketId) {
+  const room = getRoom(roomCode);
   if (!room) return;
   for (const player of room.players.values()) {
     if (player.socketId === socketId) {
@@ -112,7 +147,10 @@ function disconnectBySocketId(socketId) {
   }
 }
 
-function lobbySnapshot() {
+function lobbySnapshot(roomCode) {
+  const room = getRoom(roomCode);
+  if (!room) return null;
+
   const joinedPlayers = [...room.players.values()].filter((p) => p.connected);
 
   const groups = dataStore.competingGroups.map((g) => {
@@ -137,8 +175,10 @@ function lobbySnapshot() {
 }
 
 module.exports = {
+  hasAnyActiveRoom,
   createRoom,
   getRoom,
+  getSoleActiveRoom,
   reclaimTeacher,
   joinPlayer,
   disconnectBySocketId,
