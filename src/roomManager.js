@@ -19,7 +19,13 @@ function hasAnyActiveRoom() {
   return rooms.size > 0;
 }
 
-function createRoom(teacherSocketId) {
+// setup ({event, groupMode, teams}) is the teacher's already-validated setup
+// wizard payload — see socketHandlers.js's teacher:createRoom handler, which
+// validates it before this is ever called. event/groupMode/teams are purely
+// descriptive here: they drive the teacher's own branding/reconnect display,
+// not gameplay — actual questions and scoring still come entirely from
+// dataStore.quiz / dataStore.competingGroups, untouched by this phase.
+function createRoom(teacherSocketId, setup) {
   const code = generateCode();
   const room = {
     code,
@@ -29,7 +35,10 @@ function createRoom(teacherSocketId) {
     currentQuestionStartTime: null,
     questionTimer: null,
     answeredThisQuestion: new Set(),
-    players: new Map() // participantId -> PlayerState
+    players: new Map(), // participantId -> PlayerState
+    event: (setup && setup.event) || null,
+    groupMode: (setup && setup.groupMode) || null,
+    teams: (setup && setup.teams) || []
   };
   rooms.set(code, room);
   return room;

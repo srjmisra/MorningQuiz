@@ -5,77 +5,199 @@
   min-height: 100dvh;
 }
 
-/* ---------- Welcome screen ---------- */
-#view-welcome {
-  /* Without this, the outer .view's 480px cap (theme.css) clips the inner
-     .welcome-screen's own 720px max-width before it ever gets used. */
-  max-width: 720px;
+/* ---------- Event setup wizard ---------- */
+.view-setup {
+  max-width: 640px;
+  padding-top: 32px;
 }
 
-.welcome-screen {
-  max-width: 720px;
-  margin: 0 auto;
-  min-height: 100vh; /* fallback for browsers without dvh support */
-  min-height: 100dvh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 40px 20px;
+.setup-card {
+  padding: 28px 24px;
 }
 
-/* .kicker / .kicker-sub now live in /shared/theme.css so both the teacher
-   welcome screen and student participant-welcome screen share them. */
-
-.welcome-screen h1 {
-  font-size: clamp(28px, 5vw, 46px);
-  line-height: 1.15;
-  margin: 0 0 6px;
-  background: linear-gradient(135deg, #ffffff, #93c5fd);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
-.welcome-programme {
+.setup-step-label {
   color: var(--accent-amber);
-  font-size: clamp(13px, 2vw, 15px);
+  font-size: 13px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  margin: 0 0 14px;
+  margin: 0 0 6px;
 }
 
-.welcome-meta {
+.setup-card h2 {
+  font-size: var(--text-2xl);
+  margin: 0 0 8px;
+}
+
+.setup-intro {
   color: var(--text-secondary);
-  font-size: clamp(14px, 2.2vw, 18px);
-  margin-bottom: 4px;
+  font-size: var(--text-sm);
+  margin-bottom: 20px;
 }
 
-.welcome-stats {
-  display: flex;
-  gap: 16px;
-  margin: 24px 0;
+.setup-field {
+  margin-bottom: 18px;
 }
 
-.stat-pill {
-  background: var(--bg-elevated);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius-lg);
-  padding: 16px 28px;
-  min-width: 120px;
-}
-
-.stat-pill span {
+.setup-field label {
   display: block;
-  font-size: clamp(28px, 4vw, 40px);
-  font-weight: 800;
-}
-
-.stat-pill label {
   font-size: 13px;
   color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+
+.setup-hint {
+  color: var(--text-tertiary);
+  font-size: 12px;
+  margin-top: 6px;
+}
+
+.logo-upload-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.logo-preview {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.logo-preview img {
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--glass-border);
+}
+
+.setup-actions {
+  margin-top: 24px;
+}
+
+.setup-actions-split {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.setup-actions-split .btn-primary {
+  flex: 1;
+}
+
+.mode-options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.mode-option {
+  text-align: left;
+  background: var(--bg-elevated);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  cursor: pointer;
+  color: var(--text-primary);
+  transition: border-color var(--duration-fast) ease, background var(--duration-fast) ease;
+}
+
+.mode-option-title {
+  display: block;
+  font-weight: 700;
+  font-size: var(--text-base);
+  margin-bottom: 2px;
+}
+
+.mode-option-desc {
+  display: block;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.mode-option.is-selected {
+  border-color: var(--accent-blue);
+  background: rgba(37, 99, 235, 0.16);
+}
+
+.teams-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.team-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.team-color-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.team-name-input {
+  flex: 1;
+}
+
+.team-remove-btn {
+  min-height: auto;
+  padding: 4px 8px;
+  font-size: 16px;
+}
+
+.team-remove-btn:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.setup-teams-add-btn {
+  color: var(--accent-blue);
+  font-weight: 600;
+}
+
+.review-summary {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 10px 16px;
+  margin: 0 0 16px;
+}
+
+.review-summary dt {
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.review-summary dd {
+  margin: 0;
+  font-weight: 600;
+}
+
+.review-logo-thumb {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.review-team-chip {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  font-size: 12px;
+  font-weight: 700;
+  margin: 0 6px 6px 0;
+  background: var(--team-color);
+  color: #0b0f1a;
 }
 
 /* .btn-large now lives in /shared/theme.css so both apps share it. */
@@ -911,10 +1033,6 @@
    typography/key elements up further than clamp() alone would, so text
    stays readable from the back of a conference hall. ==================== */
 @media (min-width: 1280px) {
-  .welcome-screen h1 {
-    font-size: 64px;
-  }
-
   .brand-logo {
     height: 100px;
   }

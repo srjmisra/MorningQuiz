@@ -42,38 +42,113 @@
   </div>
 
   <div class="app-shell">
-    <section id="view-welcome" class="view view-active">
-      <div class="welcome-screen">
-        <div class="brand-logo-frame">
-          <picture>
-            <source srcset="/shared/assets/images/kvs-logo.webp" type="image/webp" />
-            <img class="brand-logo" src="/shared/assets/images/kvs-logo.png" alt="Kendriya Vidyalaya Sangathan logo" />
-          </picture>
-        </div>
-        <p class="kicker" id="welcome-org">Kendriya Vidyalaya Sangathan</p>
-        <p class="brand-hindi" id="welcome-org-hindi"></p>
-        <p class="kicker-sub" id="welcome-institute">ZIET Bhubaneswar</p>
-        <p class="brand-hindi" id="welcome-institute-hindi"></p>
-        <p class="brand-caption" id="welcome-governing-body"></p>
+    <section id="view-setup-branding" class="view view-active view-setup">
+      <div class="setup-card glass-card">
+        <p class="setup-step-label">Step 1 of 4 — Event Details</p>
+        <h2>Set up your event</h2>
+        <p class="setup-intro">Tell participants what this quiz is for. You can review everything before the room is created.</p>
 
-        <div class="brand-divider"></div>
-
-        <h1 id="welcome-title">From Code to Career</h1>
-        <p class="welcome-programme" id="welcome-programme"></p>
-
-        <div class="session-block" id="welcome-session-block">
-          <p class="session-type" data-session-type></p>
-          <p class="session-presented-label">Presented by</p>
-          <p class="session-presented-by"><span class="icon" data-icon="trophy" data-icon-size="16"></span> <span data-session-presented-by></span></p>
+        <div class="setup-field">
+          <label for="setup-title-input">Event title *</label>
+          <input type="text" id="setup-title-input" placeholder="e.g. Term 2 Science Recap" maxlength="80" />
         </div>
 
-        <p class="welcome-meta" id="welcome-venue"></p>
-        <p class="welcome-meta" id="welcome-date"></p>
-        <div class="welcome-stats">
-          <div class="stat-pill"><span id="welcome-total-participants">0</span><label>Participants</label></div>
-          <div class="stat-pill"><span id="welcome-total-groups">0</span><label>Groups</label></div>
+        <div class="setup-field">
+          <label for="setup-subtitle-input">Subtitle</label>
+          <input type="text" id="setup-subtitle-input" placeholder="e.g. Chapters 4–7" maxlength="120" />
         </div>
-        <button id="start-event-btn" class="btn-primary btn-large">Start Event</button>
+
+        <div class="setup-field">
+          <label for="setup-organizer-input">Organizer name *</label>
+          <input type="text" id="setup-organizer-input" placeholder="e.g. Mrs. Sharma" maxlength="80" />
+        </div>
+
+        <div class="setup-field">
+          <label for="setup-logo-input">Logo (optional)</label>
+          <div class="logo-upload-row">
+            <div class="logo-preview" id="setup-logo-preview-wrap" hidden>
+              <img id="setup-logo-preview" alt="Logo preview" />
+              <button type="button" id="setup-logo-remove-btn" class="btn-text">Remove</button>
+            </div>
+            <input type="file" id="setup-logo-input" accept="image/png,image/jpeg,image/webp,image/gif" />
+          </div>
+          <p class="setup-hint">PNG, JPEG, WEBP or GIF — up to ~200 KB.</p>
+        </div>
+
+        <p class="error-text" id="setup-branding-error"></p>
+
+        <div class="setup-actions">
+          <button type="button" id="setup-branding-continue-btn" class="btn-primary">Continue</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="view-setup-mode" class="view view-setup">
+      <div class="setup-card glass-card">
+        <p class="setup-step-label">Step 2 of 4 — Quiz Mode</p>
+        <h2>Choose a quiz mode</h2>
+
+        <div class="mode-options" id="setup-mode-options">
+          <button type="button" class="mode-option" data-mode="individual">
+            <span class="mode-option-title">Individual</span>
+            <span class="mode-option-desc">Everyone competes individually — no teams.</span>
+          </button>
+          <button type="button" class="mode-option" data-mode="team">
+            <span class="mode-option-title">Team</span>
+            <span class="mode-option-desc">Participants join a team when they enter their name.</span>
+          </button>
+          <button type="button" class="mode-option" data-mode="hybrid">
+            <span class="mode-option-title">Hybrid</span>
+            <span class="mode-option-desc">Teams plus individual recognition — track both.</span>
+          </button>
+        </div>
+
+        <div class="setup-actions setup-actions-split">
+          <button type="button" id="setup-mode-back-btn" class="btn-text">Back</button>
+          <button type="button" id="setup-mode-continue-btn" class="btn-primary">Continue</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="view-setup-teams" class="view view-setup">
+      <div class="setup-card glass-card">
+        <p class="setup-step-label">Step 3 of 4 — Teams</p>
+        <h2>Set up teams</h2>
+        <p class="setup-intro">Participants will pick one of these teams when they join.</p>
+
+        <div id="setup-teams-list" class="teams-list"></div>
+        <button type="button" id="setup-teams-add-btn" class="btn-text setup-teams-add-btn">+ Add team</button>
+
+        <p class="error-text" id="setup-teams-error"></p>
+
+        <div class="setup-actions setup-actions-split">
+          <button type="button" id="setup-teams-back-btn" class="btn-text">Back</button>
+          <button type="button" id="setup-teams-continue-btn" class="btn-primary">Continue</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="view-setup-review" class="view view-setup">
+      <div class="setup-card glass-card">
+        <p class="setup-step-label">Step 4 of 4 — Review</p>
+        <h2>Review &amp; create room</h2>
+
+        <dl class="review-summary">
+          <dt>Title</dt><dd id="review-title"></dd>
+          <dt>Subtitle</dt><dd id="review-subtitle"></dd>
+          <dt>Organizer</dt><dd id="review-organizer"></dd>
+          <dt>Logo</dt><dd id="review-logo"></dd>
+          <dt>Mode</dt><dd id="review-mode"></dd>
+          <dt>Teams</dt><dd id="review-teams"></dd>
+        </dl>
+
+        <p class="setup-hint">Quiz content: the currently configured question set.</p>
+        <p class="error-text" id="setup-review-error"></p>
+
+        <div class="setup-actions setup-actions-split">
+          <button type="button" id="setup-review-back-btn" class="btn-text">Back</button>
+          <button type="button" id="setup-review-create-btn" class="btn-primary">Create Room</button>
+        </div>
       </div>
     </section>
 

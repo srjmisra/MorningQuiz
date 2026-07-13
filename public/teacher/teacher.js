@@ -33,18 +33,35 @@ resetSessionBtn.addEventListener("click", () => {
 });
 
 const els = {
-  welcomeOrg: document.getElementById("welcome-org"),
-  welcomeOrgHindi: document.getElementById("welcome-org-hindi"),
-  welcomeInstitute: document.getElementById("welcome-institute"),
-  welcomeInstituteHindi: document.getElementById("welcome-institute-hindi"),
-  welcomeGoverningBody: document.getElementById("welcome-governing-body"),
-  welcomeTitle: document.getElementById("welcome-title"),
-  welcomeProgramme: document.getElementById("welcome-programme"),
-  welcomeVenue: document.getElementById("welcome-venue"),
-  welcomeDate: document.getElementById("welcome-date"),
-  welcomeTotalParticipants: document.getElementById("welcome-total-participants"),
-  welcomeTotalGroups: document.getElementById("welcome-total-groups"),
-  startEventBtn: document.getElementById("start-event-btn"),
+  setupTitleInput: document.getElementById("setup-title-input"),
+  setupSubtitleInput: document.getElementById("setup-subtitle-input"),
+  setupOrganizerInput: document.getElementById("setup-organizer-input"),
+  setupLogoInput: document.getElementById("setup-logo-input"),
+  setupLogoPreviewWrap: document.getElementById("setup-logo-preview-wrap"),
+  setupLogoPreview: document.getElementById("setup-logo-preview"),
+  setupLogoRemoveBtn: document.getElementById("setup-logo-remove-btn"),
+  setupBrandingError: document.getElementById("setup-branding-error"),
+  setupBrandingContinueBtn: document.getElementById("setup-branding-continue-btn"),
+
+  setupModeOptions: document.getElementById("setup-mode-options"),
+  setupModeBackBtn: document.getElementById("setup-mode-back-btn"),
+  setupModeContinueBtn: document.getElementById("setup-mode-continue-btn"),
+
+  setupTeamsList: document.getElementById("setup-teams-list"),
+  setupTeamsAddBtn: document.getElementById("setup-teams-add-btn"),
+  setupTeamsError: document.getElementById("setup-teams-error"),
+  setupTeamsBackBtn: document.getElementById("setup-teams-back-btn"),
+  setupTeamsContinueBtn: document.getElementById("setup-teams-continue-btn"),
+
+  reviewTitle: document.getElementById("review-title"),
+  reviewSubtitle: document.getElementById("review-subtitle"),
+  reviewOrganizer: document.getElementById("review-organizer"),
+  reviewLogo: document.getElementById("review-logo"),
+  reviewMode: document.getElementById("review-mode"),
+  reviewTeams: document.getElementById("review-teams"),
+  setupReviewError: document.getElementById("setup-review-error"),
+  setupReviewBackBtn: document.getElementById("setup-review-back-btn"),
+  setupReviewCreateBtn: document.getElementById("setup-review-create-btn"),
 
   qrCodeHolder: document.getElementById("qr-code-holder"),
   roomCodeDisplay: document.getElementById("room-code-display"),
@@ -112,21 +129,6 @@ function showView(id) {
 
 function groupById(id) {
   return roster.groups.find((g) => g.id === id);
-}
-
-function renderWelcome() {
-  const e = roster.event;
-  els.welcomeOrg.textContent = e.organization || "";
-  els.welcomeOrgHindi.textContent = e.organizationHindi || "";
-  els.welcomeInstitute.textContent = e.instituteEnglishFull || e.institute || "";
-  els.welcomeInstituteHindi.textContent = e.instituteHindi || "";
-  els.welcomeGoverningBody.textContent = e.governingBody || "";
-  els.welcomeTitle.textContent = e.tagline || e.workshopTitle || "";
-  els.welcomeProgramme.textContent = e.programme || "";
-  els.welcomeVenue.innerHTML = `${icon("map_pin", { size: 15, className: "icon" })} ${e.venue || ""}`;
-  els.welcomeDate.innerHTML = `${icon("calendar", { size: 15, className: "icon" })} ${e.dateRange || ""}`;
-  els.welcomeTotalParticipants.textContent = roster.participants.length;
-  els.welcomeTotalGroups.textContent = roster.groups.length;
 }
 
 function renderQr(joinUrl) {
@@ -199,11 +201,256 @@ function enterLobby(code) {
   showView("view-lobby");
 }
 
-els.startEventBtn.addEventListener("click", () => {
-  socket.emit("teacher:createRoom", {}, (res) => {
-    if (!res || !res.ok) return;
-    enterLobby(res.code);
+// ---------- Event setup wizard ----------
+// Four steps (branding -> mode -> teams [team/hybrid only] -> review) collect
+// everything teacher:createRoom needs. The quiz questions themselves are
+// untouched here — the server still serves the existing static quiz set;
+// this wizard only replaces how the room's event/branding/team data is
+// gathered, not what questions are asked.
+
+const TEAM_COLOR_PALETTE = ["#2563EB", "#F59E0B", "#10B981", "#EF4444", "#8B5CF6", "#06B6D4", "#EC4899", "#84CC16"];
+const MAX_LOGO_BYTES = 200 * 1024;
+const ALLOWED_LOGO_TYPES = new Set(["image/png", "image/jpeg", "image/webp", "image/gif"]);
+const MODE_LABELS = { individual: "Individual", team: "Team", hybrid: "Hybrid" };
+
+let setupState = {
+  event: { title: "", subtitle: "", organizer: "", logoDataUri: null },
+  groupMode: "individual",
+  teams: []
+};
+let teamIdCounter = 0;
+
+function nextTeamId() {
+  teamIdCounter += 1;
+  return `team-${teamIdCounter}`;
+}
+
+function makeDefaultTeams() {
+  return [
+    { id: nextTeamId(), name: "Team A", color: TEAM_COLOR_PALETTE[0] },
+    { id: nextTeamId(), name: "Team B", color: TEAM_COLOR_PALETTE[1] }
+  ];
+}
+
+// --- Step 1: Branding ---
+
+els.setupLogoInput.addEventListener("change", () => {
+  const file = els.setupLogoInput.files && els.setupLogoInput.files[0];
+  els.setupBrandingError.textContent = "";
+  if (!file) return;
+
+  if (!ALLOWED_LOGO_TYPES.has(file.type)) {
+    els.setupBrandingError.textContent = "Logo must be a PNG, JPEG, WEBP or GIF image.";
+    els.setupLogoInput.value = "";
+    return;
+  }
+  if (file.size > MAX_LOGO_BYTES) {
+    els.setupBrandingError.textContent = "Logo must be smaller than 200 KB.";
+    els.setupLogoInput.value = "";
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = () => {
+    setupState.event.logoDataUri = reader.result;
+    els.setupLogoPreview.src = reader.result;
+    els.setupLogoPreviewWrap.hidden = false;
+  };
+  reader.readAsDataURL(file);
+});
+
+els.setupLogoRemoveBtn.addEventListener("click", () => {
+  setupState.event.logoDataUri = null;
+  els.setupLogoInput.value = "";
+  els.setupLogoPreviewWrap.hidden = true;
+});
+
+els.setupBrandingContinueBtn.addEventListener("click", () => {
+  const title = els.setupTitleInput.value.trim();
+  const organizer = els.setupOrganizerInput.value.trim();
+
+  if (!title) {
+    els.setupBrandingError.textContent = "Event title is required.";
+    return;
+  }
+  if (!organizer) {
+    els.setupBrandingError.textContent = "Organizer name is required.";
+    return;
+  }
+
+  setupState.event.title = title;
+  setupState.event.subtitle = els.setupSubtitleInput.value.trim();
+  setupState.event.organizer = organizer;
+  els.setupBrandingError.textContent = "";
+  showView("view-setup-mode");
+});
+
+// --- Step 2: Mode ---
+
+function selectMode(mode) {
+  setupState.groupMode = mode;
+  [...els.setupModeOptions.children].forEach((btn) => {
+    btn.classList.toggle("is-selected", btn.dataset.mode === mode);
   });
+}
+selectMode(setupState.groupMode);
+
+els.setupModeOptions.addEventListener("click", (e) => {
+  const btn = e.target.closest(".mode-option");
+  if (!btn) return;
+  selectMode(btn.dataset.mode);
+});
+
+els.setupModeBackBtn.addEventListener("click", () => showView("view-setup-branding"));
+
+els.setupModeContinueBtn.addEventListener("click", () => {
+  if (setupState.groupMode === "individual") {
+    setupState.teams = [];
+    renderReview();
+    showView("view-setup-review");
+    return;
+  }
+  if (setupState.teams.length === 0) {
+    setupState.teams = makeDefaultTeams();
+  }
+  renderTeamsList();
+  showView("view-setup-teams");
+});
+
+// --- Step 3: Teams (Team / Hybrid modes only) ---
+
+function renderTeamsList() {
+  els.setupTeamsList.innerHTML = "";
+  setupState.teams.forEach((team) => {
+    const row = document.createElement("div");
+    row.className = "team-row";
+    row.dataset.teamId = team.id;
+
+    const dot = document.createElement("span");
+    dot.className = "team-color-dot";
+    dot.style.background = team.color;
+
+    const input = document.createElement("input");
+    input.type = "text";
+    input.className = "team-name-input";
+    input.maxLength = 40;
+    input.value = team.name;
+    input.addEventListener("input", () => {
+      team.name = input.value;
+    });
+
+    const removeBtn = document.createElement("button");
+    removeBtn.type = "button";
+    removeBtn.className = "team-remove-btn btn-text";
+    removeBtn.setAttribute("aria-label", `Remove ${team.name || "team"}`);
+    removeBtn.textContent = "✕";
+    removeBtn.disabled = setupState.teams.length <= 2;
+    removeBtn.addEventListener("click", () => {
+      setupState.teams = setupState.teams.filter((t) => t.id !== team.id);
+      renderTeamsList();
+    });
+
+    row.appendChild(dot);
+    row.appendChild(input);
+    row.appendChild(removeBtn);
+    els.setupTeamsList.appendChild(row);
+  });
+}
+
+els.setupTeamsAddBtn.addEventListener("click", () => {
+  setupState.teams.push({
+    id: nextTeamId(),
+    name: `Team ${setupState.teams.length + 1}`,
+    color: TEAM_COLOR_PALETTE[setupState.teams.length % TEAM_COLOR_PALETTE.length]
+  });
+  renderTeamsList();
+});
+
+els.setupTeamsBackBtn.addEventListener("click", () => showView("view-setup-mode"));
+
+els.setupTeamsContinueBtn.addEventListener("click", () => {
+  const names = setupState.teams.map((t) => t.name.trim());
+  if (names.some((n) => !n)) {
+    els.setupTeamsError.textContent = "Every team needs a name.";
+    return;
+  }
+  const lower = names.map((n) => n.toLowerCase());
+  if (new Set(lower).size !== lower.length) {
+    els.setupTeamsError.textContent = "Team names must be unique.";
+    return;
+  }
+  setupState.teams.forEach((t, i) => (t.name = names[i]));
+  els.setupTeamsError.textContent = "";
+  renderReview();
+  showView("view-setup-review");
+});
+
+// --- Step 4: Review ---
+
+function renderReview() {
+  const e = setupState.event;
+  els.reviewTitle.textContent = e.title;
+  els.reviewSubtitle.textContent = e.subtitle || "—";
+  els.reviewOrganizer.textContent = e.organizer;
+  els.reviewMode.textContent = MODE_LABELS[setupState.groupMode];
+
+  els.reviewLogo.innerHTML = "";
+  if (e.logoDataUri) {
+    const img = document.createElement("img");
+    img.src = e.logoDataUri;
+    img.className = "review-logo-thumb";
+    img.alt = "Event logo";
+    els.reviewLogo.appendChild(img);
+  } else {
+    els.reviewLogo.textContent = "None";
+  }
+
+  els.reviewTeams.innerHTML = "";
+  if (setupState.teams.length === 0) {
+    els.reviewTeams.textContent = "—";
+  } else {
+    setupState.teams.forEach((t) => {
+      const chip = document.createElement("span");
+      chip.className = "review-team-chip";
+      chip.style.setProperty("--team-color", t.color);
+      chip.textContent = t.name;
+      els.reviewTeams.appendChild(chip);
+    });
+  }
+
+  els.setupReviewError.textContent = "";
+}
+
+els.setupReviewBackBtn.addEventListener("click", () => {
+  showView(setupState.groupMode === "individual" ? "view-setup-mode" : "view-setup-teams");
+});
+
+els.setupReviewCreateBtn.addEventListener("click", () => {
+  els.setupReviewCreateBtn.disabled = true;
+  els.setupReviewError.textContent = "";
+
+  socket.emit(
+    "teacher:createRoom",
+    {
+      event: setupState.event,
+      groupMode: setupState.groupMode,
+      teams: setupState.teams
+    },
+    (res) => {
+      els.setupReviewCreateBtn.disabled = false;
+      if (!res || !res.ok) {
+        if (res && res.error === "roomLimitReached") {
+          els.setupReviewError.textContent = "A quiz is already running on this server. Reset it before creating a new one.";
+        } else if (res && res.details) {
+          els.setupReviewError.textContent = res.details.join(" ");
+        } else {
+          els.setupReviewError.textContent = "Could not create the room. Try again.";
+        }
+        return;
+      }
+      enterLobby(res.code);
+    }
+  );
 });
 
 function handleLobbyUpdate(data) {
@@ -666,13 +913,18 @@ async function init() {
   try {
     const res = await fetch("/api/roster");
     roster = await res.json();
-    renderWelcome();
     renderSessionBranding(roster.event.session);
 
     const reconnectRes = await new Promise((resolve) => {
       socket.emit("teacher:reconnect", {}, resolve);
     });
     if (reconnectRes && reconnectRes.exists) {
+      // Keep the wizard's in-memory state consistent with the room actually
+      // reclaimed (a refreshed teacher never sees the wizard, but if they
+      // did navigate back into it, it would reflect the real room's setup).
+      if (reconnectRes.event) setupState.event = reconnectRes.event;
+      if (reconnectRes.groupMode) setupState.groupMode = reconnectRes.groupMode;
+      if (reconnectRes.teams) setupState.teams = reconnectRes.teams;
       applyReconnectSnapshot(reconnectRes);
     }
   } catch (err) {
