@@ -52,6 +52,27 @@
   margin-top: 6px;
 }
 
+.setup-intro code {
+  background: rgba(255, 255, 255, 0.08);
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+#setup-quiz-textarea {
+  width: 100%;
+  min-height: 220px;
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 13px;
+  line-height: 1.5;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-primary);
+  padding: 12px;
+  resize: vertical;
+}
+
 .logo-upload-row {
   display: flex;
   align-items: center;

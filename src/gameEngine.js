@@ -36,18 +36,18 @@ function goToNextQuestion(io, room) {
   clearTimer(room);
   room.currentQuestionIndex += 1;
 
-  if (room.currentQuestionIndex >= dataStore.quiz.questions.length) {
+  if (room.currentQuestionIndex >= room.quiz.questions.length) {
     finishEvent(io, room);
     return;
   }
 
   room.status = "intro";
   room.answeredThisQuestion = new Set();
-  const q = dataStore.quiz.questions[room.currentQuestionIndex];
+  const q = room.quiz.questions[room.currentQuestionIndex];
 
   const introPayload = {
     questionIndex: room.currentQuestionIndex,
-    totalQuestions: dataStore.quiz.questions.length,
+    totalQuestions: room.quiz.questions.length,
     category: q.category || "General Knowledge",
     introMs: INTRO_DURATION_MS
   };
@@ -58,7 +58,7 @@ function goToNextQuestion(io, room) {
 }
 
 function beginQuestion(io, room) {
-  const q = dataStore.quiz.questions[room.currentQuestionIndex];
+  const q = room.quiz.questions[room.currentQuestionIndex];
 
   room.status = "question";
   room.currentQuestionStartTime = Date.now();
@@ -66,7 +66,7 @@ function beginQuestion(io, room) {
 
   const startPayload = {
     questionIndex: room.currentQuestionIndex,
-    totalQuestions: dataStore.quiz.questions.length,
+    totalQuestions: room.quiz.questions.length,
     question: q.question,
     image: q.image,
     options: q.options,
@@ -94,7 +94,7 @@ function submitAnswer(io, roomCode, socket, payload) {
   const { questionIndex, choiceIndex } = payload || {};
   if (questionIndex !== room.currentQuestionIndex) return { ok: false, error: "stale" };
 
-  const q = dataStore.quiz.questions[room.currentQuestionIndex];
+  const q = room.quiz.questions[room.currentQuestionIndex];
   const timeTakenMs = Date.now() - room.currentQuestionStartTime;
   const correct = choiceIndex === q.correctIndex;
   const pointsAwarded = correct
@@ -170,7 +170,7 @@ function revealResults(io, room) {
   if (!room) return;
   clearTimer(room);
   room.status = "results";
-  const q = dataStore.quiz.questions[room.currentQuestionIndex];
+  const q = room.quiz.questions[room.currentQuestionIndex];
 
   const endPayload = {
     questionIndex: room.currentQuestionIndex,
@@ -189,7 +189,7 @@ function revealResults(io, room) {
 // Per-question breakdown for the "Question Analytics" panel — reuses the
 // answers already stored on each player, no new state to track.
 function computeQuestionAnalytics(room, questionIndex) {
-  const q = dataStore.quiz.questions[questionIndex];
+  const q = room.quiz.questions[questionIndex];
   const allAnswers = [...room.players.values()]
     .map((p) => p.answers.find((a) => a.questionIndex === questionIndex))
     .filter(Boolean);
@@ -390,6 +390,7 @@ function getReconnectSnapshot(room) {
     event: room.event || null,
     groupMode: room.groupMode || null,
     teams: room.teams || [],
+    quiz: room.quiz || null,
     lobbySnapshot: room.status === "lobby" ? roomManager.lobbySnapshot(room.code) : null,
     lastIntroPayload: room.lastIntroPayload || null,
     lastQuestionStartPayload: room.lastQuestionStartPayload || null,
@@ -399,7 +400,7 @@ function getReconnectSnapshot(room) {
   };
 
   if (room.status === "question" && room.currentQuestionStartTime) {
-    const q = dataStore.quiz.questions[room.currentQuestionIndex];
+    const q = room.quiz.questions[room.currentQuestionIndex];
     const elapsedSeconds = Math.floor((Date.now() - room.currentQuestionStartTime) / 1000);
     snapshot.remainingSeconds = Math.max(0, q.timeLimitSeconds - elapsedSeconds);
   }

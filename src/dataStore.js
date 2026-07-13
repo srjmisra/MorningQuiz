@@ -1,7 +1,10 @@
 const participants = require("../config/participants.json");
 const groups = require("../config/groups.json");
 const event = require("../config/event.json");
-const quiz = require("../config/quizData.js");
+// No longer the live quiz source — gameEngine.js reads room.quiz (teacher-
+// supplied at room creation). Kept only as a ready-made "load sample quiz"
+// convenience in the setup wizard, served via GET /api/sample-quiz.
+const sampleQuiz = require("../config/quizData.js");
 
 function validate() {
   const groupIds = new Set(groups.map((g) => g.id));
@@ -34,11 +37,11 @@ function validate() {
     ids.add(p.id);
   }
 
-  if (!quiz.questions || quiz.questions.length === 0) {
+  if (!sampleQuiz.questions || sampleQuiz.questions.length === 0) {
     throw new Error("quizData.js: no questions defined");
   }
 
-  for (const [i, q] of quiz.questions.entries()) {
+  for (const [i, q] of sampleQuiz.questions.entries()) {
     if (!Array.isArray(q.options) || q.options.length !== 4) {
       throw new Error(`quizData.js: question ${i} must have exactly 4 options`);
     }
@@ -78,7 +81,7 @@ module.exports = {
   participants,
   groups,
   event,
-  quiz,
+  sampleQuiz,
   getParticipantById,
   getGroupById,
   groupSize,

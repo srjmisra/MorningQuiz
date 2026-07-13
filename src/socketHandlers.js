@@ -1,67 +1,6 @@
 const roomManager = require("./roomManager");
 const gameEngine = require("./gameEngine");
-
-const VALID_GROUP_MODES = new Set(["individual", "team", "hybrid"]);
-// ~200KB raw image + base64 inflation (~4/3x) + headroom for the data: URI prefix.
-const MAX_LOGO_DATA_URI_LENGTH = 290 * 1024;
-
-// Server-side check on the setup-wizard payload — the client already
-// validates before submitting, but this is the actual boundary the app
-// trusts. Deliberately minimal/inline for this phase rather than a shared
-// validation module: quiz-question validation (a much bigger surface) is
-// future question-import work and gets its own module then.
-function validateEventSetup(payload) {
-  const errors = [];
-  const event = (payload && payload.event) || {};
-  const groupMode = payload && payload.groupMode;
-  const rawTeams = Array.isArray(payload && payload.teams) ? payload.teams : [];
-
-  const title = typeof event.title === "string" ? event.title.trim() : "";
-  const organizer = typeof event.organizer === "string" ? event.organizer.trim() : "";
-  const subtitle = typeof event.subtitle === "string" ? event.subtitle.trim() : "";
-  const logoDataUri = typeof event.logoDataUri === "string" ? event.logoDataUri : null;
-
-  if (!title) errors.push("Event title is required.");
-  if (!organizer) errors.push("Organizer name is required.");
-  if (logoDataUri && (!logoDataUri.startsWith("data:image/") || logoDataUri.length > MAX_LOGO_DATA_URI_LENGTH)) {
-    errors.push("Logo must be a valid image under ~200KB.");
-  }
-  if (!VALID_GROUP_MODES.has(groupMode)) {
-    errors.push("Invalid quiz mode.");
-  }
-
-  let teams = [];
-  if (groupMode === "team" || groupMode === "hybrid") {
-    if (rawTeams.length < 2) {
-      errors.push("Team and Hybrid modes need at least two teams.");
-    } else {
-      const seenNames = new Set();
-      teams = rawTeams.map((t, i) => {
-        const name = typeof (t && t.name) === "string" ? t.name.trim() : "";
-        if (!name) errors.push(`Team ${i + 1} needs a name.`);
-        const key = name.toLowerCase();
-        if (key && seenNames.has(key)) errors.push(`Team name "${name}" is used more than once.`);
-        seenNames.add(key);
-        return {
-          id: (t && t.id) || `team-${i + 1}`,
-          name,
-          color: typeof (t && t.color) === "string" ? t.color : "#2563EB"
-        };
-      });
-    }
-  }
-
-  if (errors.length > 0) return { ok: false, errors };
-
-  return {
-    ok: true,
-    setup: {
-      event: { title, subtitle, organizer, logoDataUri },
-      groupMode,
-      teams
-    }
-  };
-}
+const { validateRoomSetup } = require("./eventValidation");
 
 function registerSocketHandlers(io) {
   io.on("connection", (socket) => {
@@ -83,7 +22,7 @@ function registerSocketHandlers(io) {
         return;
       }
 
-      const validation = validateEventSetup(payload);
+      const validation = validateRoomSetup(payload);
       if (!validation.ok) {
         if (typeof ack === "function") ack({ ok: false, error: "invalidSetup", details: validation.errors });
         return;

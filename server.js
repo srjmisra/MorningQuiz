@@ -39,6 +39,14 @@ app.get("/api/roster", (req, res) => {
   });
 });
 
+// Convenience only — lets the setup wizard's "Load sample quiz" button
+// pre-fill something real instead of a blank textarea. Not read by any
+// room-creation path; the teacher's submitted quiz always goes through
+// teacher:createRoom -> eventValidation.js like any other question source.
+app.get("/api/sample-quiz", (req, res) => {
+  res.json(dataStore.sampleQuiz);
+});
+
 registerSocketHandlers(io);
 
 const PORT = process.env.PORT || 3000;

@@ -44,7 +44,7 @@
   <div class="app-shell">
     <section id="view-setup-branding" class="view view-active view-setup">
       <div class="setup-card glass-card">
-        <p class="setup-step-label">Step 1 of 4 — Event Details</p>
+        <p class="setup-step-label">Step 1 of 5 — Event Details</p>
         <h2>Set up your event</h2>
         <p class="setup-intro">Tell participants what this quiz is for. You can review everything before the room is created.</p>
 
@@ -85,7 +85,7 @@
 
     <section id="view-setup-mode" class="view view-setup">
       <div class="setup-card glass-card">
-        <p class="setup-step-label">Step 2 of 4 — Quiz Mode</p>
+        <p class="setup-step-label">Step 2 of 5 — Quiz Mode</p>
         <h2>Choose a quiz mode</h2>
 
         <div class="mode-options" id="setup-mode-options">
@@ -112,7 +112,7 @@
 
     <section id="view-setup-teams" class="view view-setup">
       <div class="setup-card glass-card">
-        <p class="setup-step-label">Step 3 of 4 — Teams</p>
+        <p class="setup-step-label">Step 3 of 5 — Teams</p>
         <h2>Set up teams</h2>
         <p class="setup-intro">Participants will pick one of these teams when they join.</p>
 
@@ -128,9 +128,35 @@
       </div>
     </section>
 
+    <section id="view-setup-quiz" class="view view-setup">
+      <div class="setup-card glass-card">
+        <p class="setup-step-label">Step 4 of 5 — Questions</p>
+        <h2>Add your questions</h2>
+        <p class="setup-intro">
+          Paste a quiz as JSON: <code>{"title": "...", "questions": [...]}</code>. Each question needs
+          exactly 4 options and a <code>correctIndex</code> (0-3). A friendlier upload flow (Excel /
+          paste-from-Word) is coming soon — this is the plumbing for it.
+        </p>
+
+        <div class="setup-field">
+          <label for="setup-quiz-textarea">Quiz JSON *</label>
+          <textarea id="setup-quiz-textarea" rows="10" placeholder='{"title": "My Quiz", "questions": [...]}'></textarea>
+        </div>
+
+        <button type="button" id="setup-quiz-load-sample-btn" class="btn-text">Load sample quiz</button>
+
+        <p class="error-text" id="setup-quiz-error"></p>
+
+        <div class="setup-actions setup-actions-split">
+          <button type="button" id="setup-quiz-back-btn" class="btn-text">Back</button>
+          <button type="button" id="setup-quiz-continue-btn" class="btn-primary">Continue</button>
+        </div>
+      </div>
+    </section>
+
     <section id="view-setup-review" class="view view-setup">
       <div class="setup-card glass-card">
-        <p class="setup-step-label">Step 4 of 4 — Review</p>
+        <p class="setup-step-label">Step 5 of 5 — Review</p>
         <h2>Review &amp; create room</h2>
 
         <dl class="review-summary">
@@ -140,9 +166,9 @@
           <dt>Logo</dt><dd id="review-logo"></dd>
           <dt>Mode</dt><dd id="review-mode"></dd>
           <dt>Teams</dt><dd id="review-teams"></dd>
+          <dt>Questions</dt><dd id="review-questions"></dd>
         </dl>
 
-        <p class="setup-hint">Quiz content: the currently configured question set.</p>
         <p class="error-text" id="setup-review-error"></p>
 
         <div class="setup-actions setup-actions-split">

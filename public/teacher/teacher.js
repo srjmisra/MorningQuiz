@@ -53,12 +53,19 @@ const els = {
   setupTeamsBackBtn: document.getElementById("setup-teams-back-btn"),
   setupTeamsContinueBtn: document.getElementById("setup-teams-continue-btn"),
 
+  setupQuizTextarea: document.getElementById("setup-quiz-textarea"),
+  setupQuizLoadSampleBtn: document.getElementById("setup-quiz-load-sample-btn"),
+  setupQuizError: document.getElementById("setup-quiz-error"),
+  setupQuizBackBtn: document.getElementById("setup-quiz-back-btn"),
+  setupQuizContinueBtn: document.getElementById("setup-quiz-continue-btn"),
+
   reviewTitle: document.getElementById("review-title"),
   reviewSubtitle: document.getElementById("review-subtitle"),
   reviewOrganizer: document.getElementById("review-organizer"),
   reviewLogo: document.getElementById("review-logo"),
   reviewMode: document.getElementById("review-mode"),
   reviewTeams: document.getElementById("review-teams"),
+  reviewQuestions: document.getElementById("review-questions"),
   setupReviewError: document.getElementById("setup-review-error"),
   setupReviewBackBtn: document.getElementById("setup-review-back-btn"),
   setupReviewCreateBtn: document.getElementById("setup-review-create-btn"),
@@ -216,7 +223,8 @@ const MODE_LABELS = { individual: "Individual", team: "Team", hybrid: "Hybrid" }
 let setupState = {
   event: { title: "", subtitle: "", organizer: "", logoDataUri: null },
   groupMode: "individual",
-  teams: []
+  teams: [],
+  quiz: null
 };
 let teamIdCounter = 0;
 
@@ -306,8 +314,7 @@ els.setupModeBackBtn.addEventListener("click", () => showView("view-setup-brandi
 els.setupModeContinueBtn.addEventListener("click", () => {
   if (setupState.groupMode === "individual") {
     setupState.teams = [];
-    renderReview();
-    showView("view-setup-review");
+    showView("view-setup-quiz");
     return;
   }
   if (setupState.teams.length === 0) {
@@ -381,6 +388,44 @@ els.setupTeamsContinueBtn.addEventListener("click", () => {
   }
   setupState.teams.forEach((t, i) => (t.name = names[i]));
   els.setupTeamsError.textContent = "";
+  showView("view-setup-quiz");
+});
+
+// --- Step 4: Questions (minimal for now — raw canonical JSON only; a
+// friendlier Excel/paste-from-Word workflow lands once this plumbing, and
+// gameEngine reading room.quiz instead of the old static quizData.js, is
+// proven out) ---
+
+els.setupQuizLoadSampleBtn.addEventListener("click", async () => {
+  els.setupQuizError.textContent = "";
+  try {
+    const res = await fetch("/api/sample-quiz");
+    const sample = await res.json();
+    els.setupQuizTextarea.value = JSON.stringify(sample, null, 2);
+  } catch (err) {
+    els.setupQuizError.textContent = "Could not load the sample quiz.";
+  }
+});
+
+els.setupQuizBackBtn.addEventListener("click", () => {
+  showView(setupState.groupMode === "individual" ? "view-setup-mode" : "view-setup-teams");
+});
+
+els.setupQuizContinueBtn.addEventListener("click", () => {
+  let parsed;
+  try {
+    parsed = JSON.parse(els.setupQuizTextarea.value);
+  } catch (err) {
+    els.setupQuizError.textContent = "That isn't valid JSON.";
+    return;
+  }
+  if (!parsed || !Array.isArray(parsed.questions) || parsed.questions.length === 0) {
+    els.setupQuizError.textContent = 'Expected an object like {"title": "...", "questions": [...]}.';
+    return;
+  }
+
+  setupState.quiz = parsed;
+  els.setupQuizError.textContent = "";
   renderReview();
   showView("view-setup-review");
 });
@@ -418,11 +463,16 @@ function renderReview() {
     });
   }
 
+  els.reviewQuestions.textContent =
+    setupState.quiz && Array.isArray(setupState.quiz.questions)
+      ? `${setupState.quiz.questions.length} question${setupState.quiz.questions.length === 1 ? "" : "s"}`
+      : "None";
+
   els.setupReviewError.textContent = "";
 }
 
 els.setupReviewBackBtn.addEventListener("click", () => {
-  showView(setupState.groupMode === "individual" ? "view-setup-mode" : "view-setup-teams");
+  showView("view-setup-quiz");
 });
 
 els.setupReviewCreateBtn.addEventListener("click", () => {
@@ -434,7 +484,8 @@ els.setupReviewCreateBtn.addEventListener("click", () => {
     {
       event: setupState.event,
       groupMode: setupState.groupMode,
-      teams: setupState.teams
+      teams: setupState.teams,
+      quiz: setupState.quiz
     },
     (res) => {
       els.setupReviewCreateBtn.disabled = false;
@@ -925,6 +976,7 @@ async function init() {
       if (reconnectRes.event) setupState.event = reconnectRes.event;
       if (reconnectRes.groupMode) setupState.groupMode = reconnectRes.groupMode;
       if (reconnectRes.teams) setupState.teams = reconnectRes.teams;
+      if (reconnectRes.quiz) setupState.quiz = reconnectRes.quiz;
       applyReconnectSnapshot(reconnectRes);
     }
   } catch (err) {
