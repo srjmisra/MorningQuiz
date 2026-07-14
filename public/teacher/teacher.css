@@ -1002,6 +1002,21 @@
   margin-top: var(--space-8);
 }
 
+.final-export-row {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: var(--space-8);
+}
+
+.final-export-btn {
+  max-width: 260px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
 /* ---------- Continuous stats bar ---------- */
 .stats-bar {
   position: fixed;

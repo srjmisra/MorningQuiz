@@ -118,6 +118,8 @@ const els = {
   finalLogo: document.getElementById("final-logo"),
   finalKicker: document.getElementById("final-kicker"),
   finalThanks: document.getElementById("final-thanks"),
+  exportResultsBtn: document.getElementById("export-results-btn"),
+  exportResultsError: document.getElementById("export-results-error"),
   podiumRow: document.getElementById("podium-row"),
   championRow: document.getElementById("champion-row"),
   finalHofGrid: document.getElementById("final-hof-grid"),
@@ -952,6 +954,30 @@ function handleFinalResults(data, opts) {
   }
 }
 socket.on("game:finalResults", (data) => handleFinalResults(data));
+
+// CSV is generated entirely server-side (src/resultsExport.js) — the
+// client only ever receives the finished filename + contents and turns
+// them into a browser download via a Blob + throwaway anchor click.
+els.exportResultsBtn.addEventListener("click", () => {
+  els.exportResultsError.textContent = "";
+  els.exportResultsBtn.disabled = true;
+  socket.emit("teacher:exportResults", {}, (res) => {
+    els.exportResultsBtn.disabled = false;
+    if (!res || !res.ok) {
+      els.exportResultsError.textContent = "Could not export results. Try again.";
+      return;
+    }
+    const blob = new Blob([res.csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = res.filename;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+  });
+});
 
 // Fills every static <span class="icon" data-icon="name" data-icon-size="n">
 // placeholder in the current HTML with its Lucide SVG — keeps icon markup

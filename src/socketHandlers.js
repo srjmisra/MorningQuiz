@@ -1,6 +1,7 @@
 const roomManager = require("./roomManager");
 const gameEngine = require("./gameEngine");
 const { validateRoomSetup } = require("./eventValidation");
+const resultsExport = require("./resultsExport");
 
 function registerSocketHandlers(io) {
   io.on("connection", (socket) => {
@@ -135,6 +136,24 @@ function registerSocketHandlers(io) {
     socket.on("teacher:resetSession", (_payload, ack) => {
       roomManager.resetSession(io, socket.data.roomCode);
       if (typeof ack === "function") ack({ ok: true });
+    });
+
+    // CSV generated entirely server-side; the client only ever receives the
+    // finished filename + contents and triggers a browser download from
+    // them — no raw room data crosses the wire for this.
+    socket.on("teacher:exportResults", (_payload, ack) => {
+      const room = roomManager.getRoom(socket.data.roomCode);
+      if (!room) {
+        if (typeof ack === "function") ack({ ok: false, error: "notFound" });
+        return;
+      }
+      if (typeof ack === "function") {
+        ack({
+          ok: true,
+          filename: resultsExport.buildResultsFilename(room),
+          csv: resultsExport.toParticipantsCsv(room)
+        });
+      }
     });
 
     socket.on("student:submitAnswer", (payload, ack) => {
