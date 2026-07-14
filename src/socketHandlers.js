@@ -39,8 +39,37 @@ function registerSocketHandlers(io) {
       io.to(room.code).emit("room:lobbyUpdate", roomManager.lobbySnapshot(room.code));
     });
 
-    socket.on("student:joinRoom", ({ roomCode, participantId } = {}, ack) => {
-      const result = roomManager.joinPlayer(roomCode, participantId, socket.id);
+    // Fresh join — self-registration, no preset roster. name is always
+    // required; teamId only matters (and is only validated) when the room's
+    // mode is team/hybrid — see roomManager.joinPlayer.
+    socket.on("student:joinRoom", ({ roomCode, name, teamId } = {}, ack) => {
+      const result = roomManager.joinPlayer(roomCode, { name, teamId }, socket.id);
+      if (!result.ok) {
+        if (typeof ack === "function") ack({ ok: false, error: result.reason });
+        return;
+      }
+
+      socket.data.roomCode = roomCode;
+      socket.data.participantId = result.participant.id;
+      socket.data.role = "student";
+      socket.join(roomCode);
+
+      if (typeof ack === "function") {
+        ack({ ok: true, participant: result.participant });
+      }
+      io.to(roomCode).emit("room:lobbyUpdate", roomManager.lobbySnapshot(roomCode));
+      io.to(roomCode).emit("room:participantJoined", {
+        name: result.participant.name,
+        group: result.participant.teamId
+      });
+    });
+
+    // Reclaim an already-registered identity (page refresh / dropped
+    // connection). The client persists participantId itself (localStorage,
+    // scoped by room code) after a successful fresh join, since there's no
+    // preset roster to re-derive it from anymore.
+    socket.on("student:rejoinRoom", ({ roomCode, participantId } = {}, ack) => {
+      const result = roomManager.rejoinPlayer(roomCode, participantId, socket.id);
       if (!result.ok) {
         if (typeof ack === "function") ack({ ok: false, error: result.reason });
         return;
@@ -54,11 +83,11 @@ function registerSocketHandlers(io) {
       if (typeof ack === "function") {
         ack({ ok: true, participant: result.participant });
       }
+      // Reflects the connected-count change (a dropped socket marks the
+      // player disconnected; rejoining flips it back) but no
+      // room:participantJoined toast — that's for genuinely new joins,
+      // not a flaky connection reclaiming its own seat.
       io.to(roomCode).emit("room:lobbyUpdate", roomManager.lobbySnapshot(roomCode));
-      io.to(roomCode).emit("room:participantJoined", {
-        name: result.participant.name,
-        group: result.participant.group
-      });
     });
 
     socket.on("teacher:reconnect", (_payload, ack) => {

@@ -1,18 +1,43 @@
 const socket = io();
 
-let roster = { participants: [], groups: [], event: {} };
-let searchTerm = "";
-let selectedParticipant = null;
+let roster = { event: {} };
+let groupMode = null;
+let roomTeams = [];
+let myParticipant = null; // { id, name, teamId } — set on join/rejoin, never a preset roster lookup
 let joinedRoomCode = null;
+
+// Rejoin identity persistence — there's no preset roster to re-derive a
+// participant from anymore, so the client remembers its own id per room
+// code once self-registration succeeds.
+function storageKey(roomCode) {
+  return `uq_participant_${roomCode}`;
+}
+
+function saveIdentity(roomCode, participantId) {
+  try {
+    localStorage.setItem(storageKey(roomCode), String(participantId));
+  } catch (err) {
+    // Private browsing / storage disabled — non-fatal, just means no silent rejoin.
+  }
+}
+
+function loadStoredParticipantId(roomCode) {
+  try {
+    const raw = localStorage.getItem(storageKey(roomCode));
+    return raw ? Number(raw) : null;
+  } catch (err) {
+    return null;
+  }
+}
 
 // A brief WiFi blip reconnects the transport automatically (Socket.IO's
 // default behavior), but the server treats it as a brand-new socket — so
 // without this, a student who's already joined would silently stop being
 // able to submit answers after any network hiccup. Re-claim identity on
-// every reconnect if we'd already joined once.
+// every reconnect if we'd already joined once this page session.
 socket.on("connect", () => {
-  if (joinedRoomCode && selectedParticipant) {
-    socket.emit("student:joinRoom", { roomCode: joinedRoomCode, participantId: selectedParticipant.id }, () => {});
+  if (joinedRoomCode && myParticipant) {
+    socket.emit("student:rejoinRoom", { roomCode: joinedRoomCode, participantId: myParticipant.id }, () => {});
   }
 });
 
@@ -35,14 +60,10 @@ const els = {
   sessionStateRefreshBtn: document.getElementById("session-state-refresh-btn"),
 
   roomCodeInput: document.getElementById("room-code-input"),
-  searchInput: document.getElementById("search-input"),
-  participantList: document.getElementById("participant-list"),
-  confirmName: document.getElementById("confirm-name"),
-  confirmKv: document.getElementById("confirm-kv"),
-  confirmRegion: document.getElementById("confirm-region"),
-  confirmGroup: document.getElementById("confirm-group"),
+  studentNameInput: document.getElementById("student-name-input"),
+  teamSelectRow: document.getElementById("team-select-row"),
+  teamSelect: document.getElementById("team-select"),
   joinBtn: document.getElementById("join-btn"),
-  backBtn: document.getElementById("back-btn"),
   joinError: document.getElementById("join-error"),
   waitingName: document.getElementById("waiting-name"),
   waitingGroup: document.getElementById("waiting-group"),
@@ -93,97 +114,98 @@ function showView(id) {
   document.getElementById(id).classList.add("view-active");
 }
 
-function groupById(id) {
-  return roster.groups.find((g) => g.id === id);
+function teamById(id) {
+  return roomTeams.find((t) => t.id === id) || null;
 }
 
-function renderParticipantList() {
-  const term = searchTerm.trim().toLowerCase();
-  const filtered = roster.participants.filter((p) => !term || p.name.toLowerCase().includes(term));
+function populateTeamSelect() {
+  const requiresTeam = groupMode === "team" || groupMode === "hybrid";
+  els.teamSelectRow.hidden = !requiresTeam;
+  if (!requiresTeam) return;
 
-  els.participantList.innerHTML = "";
-  if (filtered.length === 0) {
-    const li = document.createElement("li");
-    li.className = "participant-empty";
-    li.textContent = "No participants match.";
-    els.participantList.appendChild(li);
-    return;
-  }
-
-  for (const p of filtered) {
-    const group = groupById(p.group);
-    const li = document.createElement("li");
-    li.className = "participant-item";
-    const nameSpan = document.createElement("span");
-    nameSpan.className = "participant-name";
-    nameSpan.textContent = p.name;
-    const metaSpan = document.createElement("span");
-    metaSpan.className = "participant-meta";
-    metaSpan.textContent = group ? group.name : "";
-    li.appendChild(nameSpan);
-    li.appendChild(metaSpan);
-    li.addEventListener("click", () => selectParticipant(p));
-    els.participantList.appendChild(li);
-  }
+  els.teamSelect.innerHTML = '<option value="" disabled selected>Select a team…</option>';
+  roomTeams.forEach((t) => {
+    const opt = document.createElement("option");
+    opt.value = t.id;
+    opt.textContent = t.name;
+    els.teamSelect.appendChild(opt);
+  });
 }
-
-function selectParticipant(p) {
-  selectedParticipant = p;
-  const group = groupById(p.group);
-  els.confirmName.textContent = p.name;
-  els.confirmKv.textContent = p.kv;
-  els.confirmRegion.textContent = p.region;
-  els.confirmGroup.textContent = group ? group.name : "";
-  els.joinError.textContent = "";
-  showView("view-confirm");
-  els.joinBtn.scrollIntoView({ behavior: "smooth", block: "end" });
-}
-
-els.searchInput.addEventListener("input", (e) => {
-  searchTerm = e.target.value;
-  renderParticipantList();
-});
 
 els.roomCodeInput.addEventListener("input", (e) => {
   e.target.value = e.target.value.replace(/\D/g, "").slice(0, 6);
 });
 
-els.backBtn.addEventListener("click", () => {
-  selectedParticipant = null;
-  showView("view-join");
-});
-
 const ERROR_MESSAGES = {
   notFound: "Room code not found. Check with your host.",
-  alreadyJoined: "This name is already joined from another device.",
-  hostGroupExcluded: "This group is hosting the event and isn't part of the quiz.",
-  quizFinished: "This quiz has ended."
+  quizFinished: "This quiz has ended.",
+  nameRequired: "Enter your name first.",
+  nameTooLong: "That name is too long — please shorten it.",
+  nameTaken: "That name is already taken in this room. Try adding an initial.",
+  invalidTeam: "Choose a team before joining."
 };
 
 els.sessionStateRefreshBtn.addEventListener("click", () => location.reload());
 
+function showWaitingRoom() {
+  const team = teamById(myParticipant.teamId);
+  els.waitingName.textContent = myParticipant.name;
+  els.waitingGroup.textContent = team ? team.name : "";
+  showView("view-waiting");
+}
+
 els.joinBtn.addEventListener("click", () => {
-  if (!selectedParticipant) return;
   const roomCode = els.roomCodeInput.value.trim();
+  const name = els.studentNameInput.value.trim();
+  const requiresTeam = groupMode === "team" || groupMode === "hybrid";
+  const teamId = requiresTeam ? els.teamSelect.value : null;
+
   if (!/^\d{6}$/.test(roomCode)) {
     els.joinError.textContent = "Enter the 6-digit room code first.";
     return;
   }
+  if (!name) {
+    els.joinError.textContent = ERROR_MESSAGES.nameRequired;
+    return;
+  }
+  if (requiresTeam && !teamId) {
+    els.joinError.textContent = ERROR_MESSAGES.invalidTeam;
+    return;
+  }
 
   els.joinBtn.disabled = true;
-  socket.emit("student:joinRoom", { roomCode, participantId: selectedParticipant.id }, (res) => {
+  socket.emit("student:joinRoom", { roomCode, name, teamId }, (res) => {
     els.joinBtn.disabled = false;
     if (!res || !res.ok) {
       els.joinError.textContent = (res && ERROR_MESSAGES[res.error]) || "Could not join. Try again.";
       return;
     }
     joinedRoomCode = roomCode;
-    const group = groupById(selectedParticipant.group);
-    els.waitingName.textContent = selectedParticipant.name;
-    els.waitingGroup.textContent = group ? group.name : "";
-    showView("view-waiting");
+    myParticipant = res.participant;
+    saveIdentity(roomCode, res.participant.id);
+    els.joinError.textContent = "";
+    showWaitingRoom();
   });
 });
+
+function attemptSilentRejoin(roomCode) {
+  const storedId = loadStoredParticipantId(roomCode);
+  if (!storedId) return false;
+
+  socket.emit("student:rejoinRoom", { roomCode, participantId: storedId }, (res) => {
+    if (!res || !res.ok) {
+      showView("view-participant-welcome");
+      return;
+    }
+    joinedRoomCode = roomCode;
+    myParticipant = res.participant;
+    // If a question/results/etc. is already live, the matching game:* event
+    // handler below will move the view forward as soon as it (re)arrives —
+    // this is just the safe baseline while that happens.
+    showWaitingRoom();
+  });
+  return true;
+}
 
 const ANSWER_LETTERS = ["A", "B", "C", "D"];
 
@@ -232,8 +254,8 @@ function submitAnswer(choiceIndex, cardEl) {
         els.submittedScore.textContent = res.currentScore;
         els.submittedRank.textContent = `#${res.currentRank} / ${res.totalPlayers}`;
       }
-      const group = groupById(selectedParticipant.group);
-      els.submittedGroupName.textContent = group ? group.name : "–";
+      const team = teamById(myParticipant.teamId);
+      els.submittedGroupName.textContent = team ? team.name : "–";
       els.submittedMessage.textContent = "✅ Answer Submitted";
       els.submittedSub.textContent = "Waiting for reveal…";
       els.submittedOverlay.classList.add("visible");
@@ -294,10 +316,10 @@ socket.on("game:answersLocked", () => {
   }
   if (!hasAnsweredThisQuestion) {
     myStreak = 0;
-    const group = groupById(selectedParticipant.group);
+    const team = teamById(myParticipant.teamId);
     els.submittedScore.textContent = myScore;
     els.submittedRank.textContent = myCurrentRank ? `#${myCurrentRank}` : "–";
-    els.submittedGroupName.textContent = group ? group.name : "–";
+    els.submittedGroupName.textContent = team ? team.name : "–";
     els.submittedMessage.textContent = "⏰ Time's Up!";
     els.submittedSub.textContent = "No answer submitted";
     els.submittedOverlay.classList.add("visible");
@@ -332,7 +354,7 @@ function renderAchievements(hallOfFame) {
   if (myStreak >= 3) {
     badges.push({ icon: "🔥", label: "Answer Streak" });
   }
-  if (hallOfFame && hallOfFame.highestAccuracy && hallOfFame.highestAccuracy.name === selectedParticipant.name) {
+  if (hallOfFame && hallOfFame.highestAccuracy && hallOfFame.highestAccuracy.name === myParticipant.name) {
     badges.push({ icon: "🎯", label: "Highest Accuracy" });
   }
   if (myCurrentRank && myCurrentRank <= 3) {
@@ -351,18 +373,18 @@ function renderAchievements(hallOfFame) {
 
 socket.on("game:finalResults", (data) => {
   const myRankIndex = data.finalIndividualRankings.findIndex(
-    (p) => p.participantId === selectedParticipant.id
+    (p) => p.participantId === myParticipant.id
   );
   const myEntry = myRankIndex >= 0 ? data.finalIndividualRankings[myRankIndex] : null;
-  const myGroupRankIndex = data.finalGroupRankings.findIndex((g) => g.id === selectedParticipant.group);
+  const myGroupRankIndex = data.finalGroupRankings.findIndex((g) => g.id === myParticipant.teamId);
 
   els.finalMyRank.textContent = myRankIndex >= 0 ? `#${myRankIndex + 1}` : "–";
   els.finalMyScore.textContent = myEntry ? myEntry.score : myScore;
   els.finalMyGroupRank.textContent = myGroupRankIndex >= 0 ? `#${myGroupRankIndex + 1}` : "–";
 
   const isChampIndividual =
-    data.championIndividual && data.championIndividual.participantId === selectedParticipant.id;
-  const isChampGroup = data.championGroup && data.championGroup.id === selectedParticipant.group;
+    data.championIndividual && data.championIndividual.participantId === myParticipant.id;
+  const isChampGroup = data.championGroup && data.championGroup.id === myParticipant.teamId;
 
   if (isChampIndividual) {
     els.finalHeading.textContent = "👑 You're the Champion!";
@@ -378,10 +400,10 @@ socket.on("game:finalResults", (data) => {
 
   const finalBadges = [];
   if (myLongestStreak >= 3) finalBadges.push({ icon: "🔥", label: "Answer Streak" });
-  if (data.hallOfFame.highestAccuracy && data.hallOfFame.highestAccuracy.name === selectedParticipant.name) {
+  if (data.hallOfFame.highestAccuracy && data.hallOfFame.highestAccuracy.name === myParticipant.name) {
     finalBadges.push({ icon: "🎯", label: "Highest Accuracy" });
   }
-  if (data.hallOfFame.fastestThinker && data.hallOfFame.fastestThinker.name === selectedParticipant.name) {
+  if (data.hallOfFame.fastestThinker && data.hallOfFame.fastestThinker.name === myParticipant.name) {
     finalBadges.push({ icon: "⚡", label: "Fastest Answer" });
   }
   els.finalAchievementRow.innerHTML = "";
@@ -425,17 +447,20 @@ els.pwContinueBtn.addEventListener("click", () => {
 
 async function init() {
   const params = new URLSearchParams(window.location.search);
-  const codeParam = params.get("code");
+  const codeParam = params.get("code") ? params.get("code").replace(/\D/g, "").slice(0, 6) : null;
   if (codeParam) {
-    els.roomCodeInput.value = codeParam.replace(/\D/g, "").slice(0, 6);
+    els.roomCodeInput.value = codeParam;
   }
 
   try {
     const res = await fetch("/api/roster");
     roster = await res.json();
+    groupMode = roster.groupMode;
+    roomTeams = roster.teams || [];
+
     renderParticipantWelcome();
-    renderParticipantList();
     renderSessionBranding(roster.event.session);
+    populateTeamSelect();
 
     if (roster.liveRoomStatus === null) {
       els.sessionStateHeading.textContent = "Please Wait";
@@ -445,7 +470,12 @@ async function init() {
       els.sessionStateHeading.textContent = "Quiz Ended";
       els.sessionStateBody.textContent = "This quiz has ended.";
       showView("view-session-state");
+    } else if (codeParam) {
+      // A room is live and we arrived via a room-specific link — silently
+      // reclaim identity if this browser already joined it before.
+      attemptSilentRejoin(codeParam);
     }
+    // Otherwise stay on view-participant-welcome (already view-active by default).
   } catch (err) {
     console.error("Failed to load roster:", err);
   } finally {

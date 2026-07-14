@@ -23,18 +23,24 @@ const io = new Server(server);
 app.use(express.static(path.join(__dirname, "public"), { maxAge: "5m" }));
 
 app.get("/api/roster", (req, res) => {
-  // Host group(s) (e.g. Group 3, running the event) are organisers, not
-  // competitors — they're excluded here so they never appear in the join
-  // list or any competition UI on the client.
-  //
   // v2 only ever has one active room, so "the current room" (if any) is
   // whichever one is in the registry — getSoleActiveRoom() is the same
   // v2-only convenience roomManager uses internally for teacher reconnect.
+  //
+  // No more fixed participant/group rosters to serve — students self-
+  // register (see student:joinRoom), so this now only tells the client
+  // what it needs before that: the active room's own branding/mode/teams
+  // (roomEvent/groupMode/teams), if any room exists yet.
+  //
+  // `event` (static config/event.json) is kept separately and unchanged —
+  // it's still what teacher.js's session badge reads, unrelated to any
+  // specific room.
   const room = roomManager.getSoleActiveRoom();
   res.json({
-    participants: dataStore.competingParticipants,
-    groups: dataStore.competingGroups,
     event: dataStore.event,
+    roomEvent: room ? room.event : null,
+    groupMode: room ? room.groupMode : null,
+    teams: room ? room.teams : [],
     liveRoomStatus: room ? room.status : null
   });
 });

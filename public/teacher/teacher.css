@@ -415,24 +415,6 @@
   transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
-.group-card.is-ready {
-  border-color: var(--group-color);
-  box-shadow: 0 0 0 2px var(--group-color), 0 8px 24px rgba(0, 0, 0, 0.35);
-  animation: readyPulse 0.6s ease;
-}
-
-@keyframes readyPulse {
-  0% {
-    transform: scale(1);
-  }
-  40% {
-    transform: scale(1.05);
-  }
-  100% {
-    transform: scale(1);
-  }
-}
-
 .group-card-header {
   display: flex;
   align-items: center;
@@ -464,29 +446,6 @@
 .group-card-footer {
   font-size: 13px;
   color: var(--text-secondary);
-}
-
-.group-ready-badge {
-  position: absolute;
-  top: 0;
-  right: 0;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  background: var(--group-color);
-  color: #0b0f1a;
-  font-size: 11px;
-  font-weight: 800;
-  padding: 4px 9px;
-  border-radius: 999px;
-  opacity: 0;
-  transform: scale(0.6);
-  transition: opacity 0.25s ease, transform 0.25s ease;
-}
-
-.group-card.is-ready .group-ready-badge {
-  opacity: 1;
-  transform: scale(1);
 }
 
 /* ---------- Toasts ---------- */
@@ -546,28 +505,6 @@
     opacity: 0;
     transform: translateX(30px);
   }
-}
-
-/* ---------- All-ready celebration ---------- */
-.all-ready-banner {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  text-align: center;
-  font-size: clamp(20px, 4vw, 32px);
-  font-weight: 800;
-  margin-top: 28px;
-  min-height: 40px;
-  opacity: 0;
-  transform: translateY(10px);
-  transition: opacity 0.4s ease, transform 0.4s ease;
-  color: var(--accent-green);
-}
-
-.all-ready-banner.visible {
-  opacity: 1;
-  transform: none;
 }
 
 .celebration-overlay {

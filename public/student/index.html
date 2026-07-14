@@ -57,10 +57,6 @@
     <section id="view-join" class="view">
       <header class="join-header">
         <h1>Join the Quiz</h1>
-        <p class="subtitle">From Code to Career — PGT(CS)</p>
-        <p class="session-subtitle" id="join-session-subtitle">
-          <span data-session-type></span> Presented by <span data-session-presented-by></span>
-        </p>
       </header>
 
       <div class="field-row">
@@ -69,25 +65,19 @@
       </div>
 
       <div class="field-row">
-        <label for="search-input">Find Your Name</label>
-        <input id="search-input" type="text" placeholder="Search your name..." autocomplete="off" />
+        <label for="student-name-input">Your Name</label>
+        <input id="student-name-input" type="text" maxlength="40" placeholder="Enter your name" autocomplete="off" />
       </div>
 
-      <ul id="participant-list" class="participant-list"></ul>
-    </section>
-
-    <section id="view-confirm" class="view">
-      <div class="glass-card confirm-card">
-        <h2 id="confirm-name"></h2>
-        <dl class="confirm-details">
-          <div><dt>KV</dt><dd id="confirm-kv"></dd></div>
-          <div><dt>Region</dt><dd id="confirm-region"></dd></div>
-          <div><dt>Group</dt><dd id="confirm-group"></dd></div>
-        </dl>
-        <button id="join-btn" class="btn-primary">Join Quiz</button>
-        <button id="back-btn" class="btn-text">Not you? Go back</button>
-        <p id="join-error" class="error-text"></p>
+      <div class="field-row" id="team-select-row" hidden>
+        <label for="team-select">Choose your team</label>
+        <select id="team-select">
+          <option value="" disabled selected>Select a team…</option>
+        </select>
       </div>
+
+      <p id="join-error" class="error-text"></p>
+      <button id="join-btn" class="btn-primary btn-large">Join Quiz</button>
     </section>
 
     <section id="view-waiting" class="view">

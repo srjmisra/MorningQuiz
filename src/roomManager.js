@@ -1,11 +1,11 @@
-const dataStore = require("./dataStore");
-
 // Registry of active rooms, keyed by room code. UniversalQuiz v2 still only
 // ever allows one entry — enforced solely via hasAnyActiveRoom() in
 // socketHandlers.js — but the storage itself has no such limit baked in, so
 // lifting that restriction later means removing one guard, not restructuring
 // how rooms are stored.
 const rooms = new Map();
+
+const MAX_NAME_LENGTH = 40;
 
 function generateCode() {
   let code;
@@ -23,9 +23,10 @@ function hasAnyActiveRoom() {
 // setup wizard payload — see src/eventValidation.js, called from
 // socketHandlers.js's teacher:createRoom handler before this ever runs.
 // event/groupMode/teams are purely descriptive (teacher's own branding/
-// reconnect display). quiz is not descriptive — gameEngine.js reads
-// room.quiz.questions directly to run the game; dataStore.competingGroups
-// still backs participants/teams for now (untouched by this phase).
+// reconnect display). quiz drives gameplay directly (room.quiz.questions).
+// teams is also the *only* source of team identity now — participants are
+// self-registered per room (see joinPlayer below), not looked up from any
+// static roster.
 function createRoom(teacherSocketId, setup) {
   const code = generateCode();
   const room = {
@@ -36,6 +37,8 @@ function createRoom(teacherSocketId, setup) {
     currentQuestionStartTime: null,
     questionTimer: null,
     answeredThisQuestion: new Set(),
+    participants: new Map(), // participantId -> { id, name, teamId }
+    participantIdCounter: 0,
     players: new Map(), // participantId -> PlayerState
     quiz: (setup && setup.quiz) || null,
     event: (setup && setup.event) || null,
@@ -70,38 +73,46 @@ function reclaimTeacher(socketId, roomCode) {
   return room;
 }
 
-function joinPlayer(roomCode, participantId, socketId) {
+// Fresh join: student self-registers with a name (always) and a team
+// (required only when the room's mode is team/hybrid — room.teams is the
+// only valid source of team ids, never a value the client invents).
+function joinPlayer(roomCode, { name, teamId } = {}, socketId) {
   const room = getRoom(roomCode);
   if (!room) {
     return { ok: false, reason: "notFound" };
   }
-
   if (room.status === "ended") {
     return { ok: false, reason: "quizFinished" };
   }
 
-  const participant = dataStore.getParticipantById(participantId);
-  if (!participant) {
-    return { ok: false, reason: "notFound" };
+  const trimmedName = String(name || "").trim();
+  if (!trimmedName) {
+    return { ok: false, reason: "nameRequired" };
+  }
+  if (trimmedName.length > MAX_NAME_LENGTH) {
+    return { ok: false, reason: "nameTooLong" };
   }
 
-  // Host group (e.g. Group 3, running the event) organises rather than
-  // competes — rejected here too, defensively, even though the client never
-  // offers them in the join list.
-  if (dataStore.isHostGroup(participant.group)) {
-    return { ok: false, reason: "hostGroupExcluded" };
+  const requiresTeam = room.groupMode === "team" || room.groupMode === "hybrid";
+  let resolvedTeamId = null;
+  if (requiresTeam) {
+    const team = (room.teams || []).find((t) => t.id === teamId);
+    if (!team) {
+      return { ok: false, reason: "invalidTeam" };
+    }
+    resolvedTeamId = team.id;
   }
 
-  const existing = room.players.get(participantId);
-  if (existing && existing.connected) {
-    return { ok: false, reason: "alreadyJoined" };
+  const nameKey = trimmedName.toLowerCase();
+  const nameTaken = [...room.participants.values()].some((p) => p.name.toLowerCase() === nameKey);
+  if (nameTaken) {
+    return { ok: false, reason: "nameTaken" };
   }
 
-  if (existing) {
-    existing.socketId = socketId;
-    existing.connected = true;
-    return { ok: true, player: existing, participant };
-  }
+  room.participantIdCounter += 1;
+  const participantId = room.participantIdCounter;
+  const participant = { id: participantId, name: trimmedName, teamId: resolvedTeamId };
+  room.participants.set(participantId, participant);
 
   const player = {
     participantId,
@@ -116,6 +127,30 @@ function joinPlayer(roomCode, participantId, socketId) {
     answers: []
   };
   room.players.set(participantId, player);
+  return { ok: true, player, participant };
+}
+
+// Reclaim an already-registered identity (page refresh, dropped connection).
+// Unlike joinPlayer, this never rejects on "already connected" — the whole
+// point is the same student's browser taking its own socket back over,
+// which is exactly as valid whether or not the old socket ever cleanly
+// disconnected first.
+function rejoinPlayer(roomCode, participantId, socketId) {
+  const room = getRoom(roomCode);
+  if (!room) {
+    return { ok: false, reason: "notFound" };
+  }
+  const participant = room.participants.get(participantId);
+  const player = room.players.get(participantId);
+  if (!participant || !player) {
+    return { ok: false, reason: "notFound" };
+  }
+  if (room.status === "ended") {
+    return { ok: false, reason: "quizFinished" };
+  }
+
+  player.socketId = socketId;
+  player.connected = true;
   return { ok: true, player, participant };
 }
 
@@ -158,28 +193,30 @@ function disconnectBySocketId(roomCode, socketId) {
   }
 }
 
+// Dynamic counts based on whoever has actually joined this room — there is
+// no fixed roster size to report a fraction/"all ready" state against
+// anymore, unlike the old static-roster model.
 function lobbySnapshot(roomCode) {
   const room = getRoom(roomCode);
   if (!room) return null;
 
   const joinedPlayers = [...room.players.values()].filter((p) => p.connected);
 
-  const groups = dataStore.competingGroups.map((g) => {
-    const size = dataStore.groupSize(g.id);
-    const joined = joinedPlayers.filter(
-      (p) => dataStore.getParticipantById(p.participantId).group === g.id
-    ).length;
-    return { id: g.id, name: g.name, color: g.color, joined, size };
+  const groups = (room.teams || []).map((t) => {
+    const joined = joinedPlayers.filter((p) => {
+      const participant = room.participants.get(p.participantId);
+      return participant && participant.teamId === t.id;
+    }).length;
+    return { id: t.id, name: t.name, color: t.color, joined };
   });
 
   const roster = joinedPlayers.map((p) => {
-    const participant = dataStore.getParticipantById(p.participantId);
-    return { participantId: p.participantId, name: participant.name, group: participant.group };
+    const participant = room.participants.get(p.participantId);
+    return { participantId: p.participantId, name: participant.name, group: participant.teamId };
   });
 
   return {
     totalJoined: roster.length,
-    totalParticipants: dataStore.competingParticipants.length,
     groups,
     roster
   };
@@ -192,6 +229,7 @@ module.exports = {
   getSoleActiveRoom,
   reclaimTeacher,
   joinPlayer,
+  rejoinPlayer,
   disconnectBySocketId,
   lobbySnapshot,
   resetSession

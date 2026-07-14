@@ -1,4 +1,3 @@
-const dataStore = require("./dataStore");
 const roomManager = require("./roomManager");
 
 const INTRO_DURATION_MS = 4000;
@@ -8,8 +7,8 @@ function connectedPlayers(room) {
   return [...room.players.values()].filter((p) => p.connected);
 }
 
-function participantOf(player) {
-  return dataStore.getParticipantById(player.participantId);
+function participantOf(room, player) {
+  return room.participants.get(player.participantId);
 }
 
 function clearTimer(room) {
@@ -264,13 +263,13 @@ function finishEvent(io, room) {
 function computeIndividualTop(room, count) {
   return [...room.players.values()]
     .map((p) => {
-      const participant = participantOf(p);
-      const group = dataStore.getGroupById(participant.group);
+      const participant = participantOf(room, p);
+      const team = (room.teams || []).find((t) => t.id === participant.teamId) || null;
       return {
         participantId: p.participantId,
         name: participant.name,
-        group: participant.group,
-        groupName: group ? group.name : "",
+        group: participant.teamId,
+        groupName: team ? team.name : "",
         score: p.score,
         streak: p.streak
       };
@@ -279,41 +278,44 @@ function computeIndividualTop(room, count) {
     .slice(0, count);
 }
 
-// Group ranking uses average score across members who have actually answered at
-// least one question, not a raw sum — otherwise larger groups win by headcount alone.
-// Host group(s) (e.g. Group 3) are organisers, not competitors, so they're
-// excluded via competingGroups rather than the raw group list.
+// Team ranking uses average score across members who have actually answered
+// at least one question, not a raw sum — otherwise bigger teams win by
+// headcount alone. Teams (and who's on them) are entirely teacher-defined
+// via the setup wizard (room.teams) — empty in individual mode, which
+// naturally yields an empty leaderboard/progress list below.
 function computeGroupLeaderboard(room) {
-  return dataStore.competingGroups
-    .map((g) => {
-      const members = [...room.players.values()].filter((p) => participantOf(p).group === g.id);
+  return (room.teams || [])
+    .map((t) => {
+      const members = [...room.players.values()].filter((p) => participantOf(room, p).teamId === t.id);
       const participated = members.filter((p) => p.answeredCount > 0);
       const avgPerformance =
         participated.length > 0
           ? Math.round(participated.reduce((sum, p) => sum + p.score, 0) / participated.length)
           : 0;
       return {
-        id: g.id,
-        name: g.name,
-        color: g.color,
+        id: t.id,
+        name: t.name,
+        color: t.color,
         avgPerformance,
         membersJoined: members.length,
         membersParticipated: participated.length,
-        groupSize: dataStore.groupSize(g.id)
+        // No fixed roster size to report anymore — just echoes the current
+        // joined count so any client still reading this field stays sane.
+        groupSize: members.length
       };
     })
     .sort((a, b) => b.avgPerformance - a.avgPerformance);
 }
 
 function computeGroupProgress(room, questionIndex) {
-  return dataStore.competingGroups.map((g) => {
-    const members = [...room.players.values()].filter((p) => participantOf(p).group === g.id);
+  return (room.teams || []).map((t) => {
+    const members = [...room.players.values()].filter((p) => participantOf(room, p).teamId === t.id);
     const answered = members
       .map((p) => p.answers.find((a) => a.questionIndex === questionIndex))
       .filter(Boolean);
     const correct = answered.filter((a) => a.correct).length;
     const pct = answered.length > 0 ? Math.round((correct / answered.length) * 100) : 0;
-    return { id: g.id, name: g.name, color: g.color, correct, answered: answered.length, pct };
+    return { id: t.id, name: t.name, color: t.color, correct, answered: answered.length, pct };
   });
 }
 
@@ -333,7 +335,7 @@ function buildLiveStats(room) {
   let fastest = null;
   for (const p of room.players.values()) {
     if (p.fastestCorrectMs !== null && (!fastest || p.fastestCorrectMs < fastest.ms)) {
-      fastest = { name: participantOf(p).name, ms: p.fastestCorrectMs };
+      fastest = { name: participantOf(room, p).name, ms: p.fastestCorrectMs };
     }
   }
 
@@ -347,7 +349,7 @@ function buildLiveStats(room) {
   let longestStreakPlayer = null;
   for (const p of room.players.values()) {
     if (p.longestStreak > 0 && (!longestStreakPlayer || p.longestStreak > longestStreakPlayer.streak)) {
-      longestStreakPlayer = { name: participantOf(p).name, streak: p.longestStreak };
+      longestStreakPlayer = { name: participantOf(room, p).name, streak: p.longestStreak };
     }
   }
 
@@ -355,7 +357,7 @@ function buildLiveStats(room) {
   for (const p of withAnswers) {
     const pct = p.correctCount / p.answeredCount;
     if (!highestAccuracyPlayer || pct > highestAccuracyPlayer.pct / 100) {
-      highestAccuracyPlayer = { name: participantOf(p).name, pct: Math.round(pct * 100) };
+      highestAccuracyPlayer = { name: participantOf(room, p).name, pct: Math.round(pct * 100) };
     }
   }
 

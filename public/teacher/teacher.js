@@ -86,9 +86,7 @@ const els = {
   roomCodeDisplay: document.getElementById("room-code-display"),
   joinUrlDisplay: document.getElementById("join-url-display"),
   joinedCount: document.getElementById("joined-count"),
-  remainingCount: document.getElementById("remaining-count"),
   groupGrid: document.getElementById("group-grid"),
-  allReadyBanner: document.getElementById("all-ready-banner"),
   toastContainer: document.getElementById("toast-container"),
   celebrationOverlay: document.getElementById("celebration-overlay"),
   startQuizBtn: document.getElementById("start-quiz-btn"),
@@ -133,9 +131,7 @@ const els = {
   statLeadingIndividual: document.getElementById("stat-leading-individual")
 };
 
-let roster = { participants: [], groups: [], event: {} };
-const readyGroups = new Set();
-let allReadyFired = false;
+let roster = { event: {} };
 let latestLobby = null;
 let currentQuestion = null;
 let countdownIntervalId = null;
@@ -146,8 +142,11 @@ function showView(id) {
   document.getElementById(id).classList.add("view-active");
 }
 
-function groupById(id) {
-  return roster.groups.find((g) => g.id === id);
+// setupState.teams is this room's actual team list (submitted at creation,
+// or restored on reconnect) — the only source of team identity now that
+// there's no static roster to look groups up from.
+function teamById(id) {
+  return setupState.teams.find((t) => t.id === id);
 }
 
 function renderQr(joinUrl) {
@@ -158,31 +157,21 @@ function renderQr(joinUrl) {
 }
 
 function renderGroupCards(groupsData) {
+  // No fixed roster size to track progress toward anymore — each card just
+  // shows how many students have actually joined that team so far.
   els.groupGrid.innerHTML = "";
   groupsData.forEach((g, i) => {
-    const pct = g.size > 0 ? Math.round((g.joined / g.size) * 100) : 0;
-    const isReady = g.size > 0 && g.joined >= g.size;
-
     const card = document.createElement("div");
-    card.className = "group-card" + (isReady ? " is-ready" : "");
+    card.className = "group-card";
     card.style.setProperty("--group-color", g.color);
     card.innerHTML = `
       <div class="group-card-header">
         ${groupEmblem(g, { size: 34, delay: i * 0.05 })}
         <span class="group-name">${g.name}</span>
-        <span class="group-ready-badge">${icon("check", { size: 12 })} Ready</span>
       </div>
-      <div class="group-progress-track">
-        <div class="group-progress-fill" style="width:${pct}%"></div>
-      </div>
-      <div class="group-card-footer">${g.joined} / ${g.size} Joined</div>
+      <div class="group-card-footer">${g.joined} Joined</div>
     `;
     els.groupGrid.appendChild(card);
-
-    if (isReady && !readyGroups.has(g.id)) {
-      readyGroups.add(g.id);
-      showToast(`${g.name} ready`, "ready");
-    }
   });
 }
 
@@ -197,19 +186,6 @@ function showToast(message, kind) {
     toast.classList.add("toast-leaving");
     setTimeout(() => toast.remove(), 300);
   }, 3200);
-}
-
-function checkAllReady(data) {
-  const allReady = data.totalParticipants > 0 && data.totalJoined === data.totalParticipants;
-  if (allReady && !allReadyFired) {
-    allReadyFired = true;
-    els.allReadyBanner.innerHTML = `${icon("circle_check", { size: 22, className: "icon" })} All Groups Ready`;
-    els.allReadyBanner.classList.add("visible");
-    launchConfetti({ container: els.celebrationOverlay, count: 120 });
-  } else if (!allReady && allReadyFired) {
-    allReadyFired = false;
-    els.allReadyBanner.classList.remove("visible");
-  }
 }
 
 function enterLobby(code) {
@@ -583,16 +559,14 @@ els.setupReviewCreateBtn.addEventListener("click", () => {
 function handleLobbyUpdate(data) {
   latestLobby = data;
   els.joinedCount.textContent = data.totalJoined;
-  els.remainingCount.textContent = data.totalParticipants - data.totalJoined;
   renderGroupCards(data.groups);
-  checkAllReady(data);
   els.startQuizBtn.disabled = data.totalJoined < 1;
 }
 socket.on("room:lobbyUpdate", handleLobbyUpdate);
 
 socket.on("room:participantJoined", (data) => {
-  const group = groupById(data.group);
-  showToast(`${data.name} joined ${group ? group.name : ""}`);
+  const team = teamById(data.group);
+  showToast(`${data.name} joined${team ? ` ${team.name}` : ""}`);
 });
 
 els.startQuizBtn.addEventListener("click", () => {
