@@ -132,24 +132,59 @@
       <div class="setup-card glass-card">
         <p class="setup-step-label">Step 4 of 5 — Questions</p>
         <h2>Add your questions</h2>
-        <p class="setup-intro">
-          Paste a quiz as JSON: <code>{"title": "...", "questions": [...]}</code>. Each question needs
-          exactly 4 options and a <code>correctIndex</code> (0-3). A friendlier upload flow (Excel /
-          paste-from-Word) is coming soon — this is the plumbing for it.
-        </p>
+        <p class="setup-intro">Choose whichever is easiest — upload a filled-in Excel template, or paste questions straight from a Word or Google Doc.</p>
 
-        <div class="setup-field">
-          <label for="setup-quiz-textarea">Quiz JSON *</label>
-          <textarea id="setup-quiz-textarea" rows="10" placeholder='{"title": "My Quiz", "questions": [...]}'></textarea>
+        <div class="import-methods">
+          <div class="import-method-card">
+            <h3>Upload Excel</h3>
+            <p class="setup-hint">Download the template, fill it in, then upload it here.</p>
+            <button type="button" id="quiz-download-template-btn" class="btn-text">Download Template (.xlsx)</button>
+            <input type="file" id="quiz-xlsx-input" accept=".xlsx" />
+          </div>
+
+          <div class="import-method-card">
+            <h3>Paste Questions</h3>
+            <p class="setup-hint">Paste questions copied from Word or Google Docs, in this format:</p>
+            <pre class="paste-format-example">1. Question text
+
+A. Option
+B. Option
+C. Option
+D. Option
+
+Answer: A</pre>
+            <textarea id="quiz-paste-textarea" rows="8" placeholder="Paste your questions here..."></textarea>
+            <button type="button" id="quiz-paste-import-btn" class="btn-primary">Import Pasted Questions</button>
+          </div>
         </div>
 
-        <button type="button" id="setup-quiz-load-sample-btn" class="btn-text">Load sample quiz</button>
+        <button type="button" id="quiz-advanced-toggle-btn" class="btn-text quiz-advanced-toggle-btn">Advanced: CSV or JSON</button>
+        <div id="quiz-advanced-panel" class="quiz-advanced-panel" hidden>
+          <div class="setup-field">
+            <label for="quiz-csv-input">CSV file</label>
+            <input type="file" id="quiz-csv-input" accept=".csv" />
+          </div>
+          <div class="setup-field">
+            <label for="quiz-json-textarea">Quiz JSON</label>
+            <textarea id="quiz-json-textarea" rows="8" placeholder='{"title": "...", "questions": [...]}'></textarea>
+            <div class="quiz-json-actions">
+              <button type="button" id="quiz-json-load-sample-btn" class="btn-text">Load sample quiz</button>
+              <button type="button" id="quiz-json-import-btn" class="btn-text">Import JSON</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="quiz-import-result" class="quiz-import-result" hidden>
+          <p id="quiz-import-summary" class="quiz-import-summary"></p>
+          <ul id="quiz-import-errors" class="quiz-import-errors"></ul>
+          <ol id="quiz-import-preview" class="quiz-import-preview"></ol>
+        </div>
 
         <p class="error-text" id="setup-quiz-error"></p>
 
         <div class="setup-actions setup-actions-split">
           <button type="button" id="setup-quiz-back-btn" class="btn-text">Back</button>
-          <button type="button" id="setup-quiz-continue-btn" class="btn-primary">Continue</button>
+          <button type="button" id="setup-quiz-continue-btn" class="btn-primary" disabled>Continue</button>
         </div>
       </div>
     </section>
@@ -332,6 +367,8 @@
   <script src="/shared/splash.js"></script>
   <script src="/shared/icons.js"></script>
   <script src="/shared/emblems.js"></script>
+  <script src="/shared/xlsx.mini.min.js"></script>
+  <script src="/shared/quizImport.js"></script>
   <script src="teacher.js"></script>
 </body>
 </html>

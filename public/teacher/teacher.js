@@ -53,8 +53,20 @@ const els = {
   setupTeamsBackBtn: document.getElementById("setup-teams-back-btn"),
   setupTeamsContinueBtn: document.getElementById("setup-teams-continue-btn"),
 
-  setupQuizTextarea: document.getElementById("setup-quiz-textarea"),
-  setupQuizLoadSampleBtn: document.getElementById("setup-quiz-load-sample-btn"),
+  quizDownloadTemplateBtn: document.getElementById("quiz-download-template-btn"),
+  quizXlsxInput: document.getElementById("quiz-xlsx-input"),
+  quizPasteTextarea: document.getElementById("quiz-paste-textarea"),
+  quizPasteImportBtn: document.getElementById("quiz-paste-import-btn"),
+  quizAdvancedToggleBtn: document.getElementById("quiz-advanced-toggle-btn"),
+  quizAdvancedPanel: document.getElementById("quiz-advanced-panel"),
+  quizCsvInput: document.getElementById("quiz-csv-input"),
+  quizJsonTextarea: document.getElementById("quiz-json-textarea"),
+  quizJsonLoadSampleBtn: document.getElementById("quiz-json-load-sample-btn"),
+  quizJsonImportBtn: document.getElementById("quiz-json-import-btn"),
+  quizImportResult: document.getElementById("quiz-import-result"),
+  quizImportSummary: document.getElementById("quiz-import-summary"),
+  quizImportErrors: document.getElementById("quiz-import-errors"),
+  quizImportPreview: document.getElementById("quiz-import-preview"),
   setupQuizError: document.getElementById("setup-quiz-error"),
   setupQuizBackBtn: document.getElementById("setup-quiz-back-btn"),
   setupQuizContinueBtn: document.getElementById("setup-quiz-continue-btn"),
@@ -391,20 +403,93 @@ els.setupTeamsContinueBtn.addEventListener("click", () => {
   showView("view-setup-quiz");
 });
 
-// --- Step 4: Questions (minimal for now — raw canonical JSON only; a
-// friendlier Excel/paste-from-Word workflow lands once this plumbing, and
-// gameEngine reading room.quiz instead of the old static quizData.js, is
-// proven out) ---
+// --- Step 4: Questions ---
+// Four import methods, all funneling through the QuizImport registry
+// (public/shared/quizImport.js) into the same canonical {ok, questions,
+// errors} shape — renderImportResult() below is the one shared preview/
+// error UI every method uses, regardless of which format the teacher chose.
 
-els.setupQuizLoadSampleBtn.addEventListener("click", async () => {
+let lastImportResult = null;
+
+function renderImportResult(result) {
+  lastImportResult = result;
+  els.quizImportResult.hidden = false;
+
+  const count = result.questions.length;
+  const errCount = result.errors.length;
+  els.quizImportSummary.textContent =
+    `${count} question${count === 1 ? "" : "s"} found` + (errCount ? `, ${errCount} error${errCount === 1 ? "" : "s"}` : "");
+
+  els.quizImportErrors.innerHTML = "";
+  result.errors.forEach((e) => {
+    const li = document.createElement("li");
+    li.textContent = e.row != null ? `Row ${e.row}: ${e.message}` : e.message;
+    els.quizImportErrors.appendChild(li);
+  });
+
+  els.quizImportPreview.innerHTML = "";
+  result.questions.slice(0, 25).forEach((q) => {
+    const li = document.createElement("li");
+    li.textContent = q.question || "(blank question text)";
+    els.quizImportPreview.appendChild(li);
+  });
+
+  els.setupQuizContinueBtn.disabled = !result.ok;
+  els.setupQuizError.textContent = result.ok
+    ? ""
+    : count > 0
+      ? "Fix the errors above, then re-import, before continuing."
+      : "";
+
+  if (result.ok) {
+    setupState.quiz = { title: setupState.event.title || "Quiz", questions: result.questions };
+  }
+}
+
+// Primary method 1: Excel upload
+els.quizDownloadTemplateBtn.addEventListener("click", () => {
+  QuizImport.downloadTemplate();
+});
+
+els.quizXlsxInput.addEventListener("change", async () => {
+  const file = els.quizXlsxInput.files && els.quizXlsxInput.files[0];
+  if (!file) return;
+  const buffer = await file.arrayBuffer();
+  renderImportResult(QuizImport.importers.xlsx(buffer));
+});
+
+// Primary method 2: paste from Word/Docs
+els.quizPasteImportBtn.addEventListener("click", () => {
+  renderImportResult(QuizImport.importers.pasted(els.quizPasteTextarea.value));
+});
+
+// Advanced (secondary): CSV / JSON
+els.quizAdvancedToggleBtn.addEventListener("click", () => {
+  const opening = els.quizAdvancedPanel.hidden;
+  els.quizAdvancedPanel.hidden = !opening;
+  els.quizAdvancedToggleBtn.textContent = opening ? "Hide advanced options" : "Advanced: CSV or JSON";
+});
+
+els.quizCsvInput.addEventListener("change", async () => {
+  const file = els.quizCsvInput.files && els.quizCsvInput.files[0];
+  if (!file) return;
+  const text = await file.text();
+  renderImportResult(QuizImport.importers.csv(text));
+});
+
+els.quizJsonLoadSampleBtn.addEventListener("click", async () => {
   els.setupQuizError.textContent = "";
   try {
     const res = await fetch("/api/sample-quiz");
     const sample = await res.json();
-    els.setupQuizTextarea.value = JSON.stringify(sample, null, 2);
+    els.quizJsonTextarea.value = JSON.stringify(sample, null, 2);
   } catch (err) {
     els.setupQuizError.textContent = "Could not load the sample quiz.";
   }
+});
+
+els.quizJsonImportBtn.addEventListener("click", () => {
+  renderImportResult(QuizImport.importers.json(els.quizJsonTextarea.value));
 });
 
 els.setupQuizBackBtn.addEventListener("click", () => {
@@ -412,25 +497,16 @@ els.setupQuizBackBtn.addEventListener("click", () => {
 });
 
 els.setupQuizContinueBtn.addEventListener("click", () => {
-  let parsed;
-  try {
-    parsed = JSON.parse(els.setupQuizTextarea.value);
-  } catch (err) {
-    els.setupQuizError.textContent = "That isn't valid JSON.";
+  if (!setupState.quiz || !Array.isArray(setupState.quiz.questions) || setupState.quiz.questions.length === 0) {
+    els.setupQuizError.textContent = "Import at least one valid question first.";
     return;
   }
-  if (!parsed || !Array.isArray(parsed.questions) || parsed.questions.length === 0) {
-    els.setupQuizError.textContent = 'Expected an object like {"title": "...", "questions": [...]}.';
-    return;
-  }
-
-  setupState.quiz = parsed;
   els.setupQuizError.textContent = "";
   renderReview();
   showView("view-setup-review");
 });
 
-// --- Step 4: Review ---
+// --- Step 5: Review ---
 
 function renderReview() {
   const e = setupState.event;
