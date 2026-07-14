@@ -78,6 +78,18 @@
   min-height: 180px;
 }
 
+.view-setup select {
+  min-height: 48px;
+  font-size: 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-primary);
+  padding: 0 14px;
+  width: 100%;
+  font-family: inherit;
+}
+
 /* ---------- Question import (Phase 4B) ---------- */
 
 .import-methods {

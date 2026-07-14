@@ -336,13 +336,16 @@ function buildLiveStats(room) {
 function getReconnectSnapshot(room) {
   const snapshot = {
     status: room.status,
-    // Passthrough of the teacher's setup-wizard data (event/groupMode/teams)
-    // so a refreshed teacher browser can restore it without redoing setup.
-    // Purely descriptive — not read by any scoring/leaderboard/timer logic.
+    // Passthrough of the teacher's setup-wizard data (event/groupMode/teams/
+    // settings) so a refreshed teacher browser can restore it without
+    // redoing setup. Purely descriptive — not read by any scoring/
+    // leaderboard/timer logic (any time-per-question override is already
+    // baked into room.quiz.questions[*].timeLimitSeconds).
     event: room.event || null,
     groupMode: room.groupMode || null,
     teams: room.teams || [],
     quiz: room.quiz || null,
+    settings: room.settings || { timePerQuestion: null },
     lobbySnapshot: room.status === "lobby" ? roomManager.lobbySnapshot(room.code) : null,
     lastIntroPayload: room.lastIntroPayload || null,
     lastQuestionStartPayload: room.lastQuestionStartPayload || null,

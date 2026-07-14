@@ -9,6 +9,7 @@ const VALID_GROUP_MODES = new Set(["individual", "team", "hybrid"]);
 // ~200KB raw image + base64 inflation (~4/3x) + headroom for the data: URI prefix.
 const MAX_LOGO_DATA_URI_LENGTH = 290 * 1024;
 const DEFAULT_TIME_LIMIT_SECONDS = 20;
+const TIME_PER_QUESTION_OPTIONS = new Set([10, 15, 20, 30, 45, 60]);
 
 function validateEventFields(payload, errors) {
   const event = (payload && payload.event) || {};
@@ -102,14 +103,46 @@ function validateQuizFields(payload, errors) {
   return { title: title || "Quiz", questions };
 }
 
+// Optional room-level setting, independent of quiz-question validation
+// above. Missing/null is valid (backward compatible — see the override
+// step in validateRoomSetup below); an explicit value must be one of the
+// dropdown's own options, same "never trust the client" boundary as
+// everything else here.
+function validateSettingsFields(payload, errors) {
+  const rawSettings = payload && payload.settings;
+  const rawTimePerQuestion = rawSettings && rawSettings.timePerQuestion;
+
+  if (rawTimePerQuestion == null) {
+    return { timePerQuestion: null };
+  }
+
+  const timePerQuestion = Number(rawTimePerQuestion);
+  if (!TIME_PER_QUESTION_OPTIONS.has(timePerQuestion)) {
+    errors.push(`Time per question must be one of: ${[...TIME_PER_QUESTION_OPTIONS].join(", ")} seconds.`);
+    return { timePerQuestion: null };
+  }
+
+  return { timePerQuestion };
+}
+
 function validateRoomSetup(payload) {
   const errors = [];
   const { event, groupMode, teams } = validateEventFields(payload, errors);
   const quiz = validateQuizFields(payload, errors);
+  const settings = validateSettingsFields(payload, errors);
 
   if (errors.length > 0) return { ok: false, errors };
 
-  return { ok: true, setup: { event, groupMode, teams, quiz } };
+  // Room creation-time override: a teacher-selected time-per-question
+  // applies to every question regardless of what the import source
+  // specified individually. Backward compatible — if settings.
+  // timePerQuestion is missing (null), each question keeps its own
+  // already-validated timeLimitSeconds untouched.
+  const finalQuiz = settings.timePerQuestion
+    ? { ...quiz, questions: quiz.questions.map((q) => ({ ...q, timeLimitSeconds: settings.timePerQuestion })) }
+    : quiz;
+
+  return { ok: true, setup: { event, groupMode, teams, quiz: finalQuiz, settings } };
 }
 
 module.exports = { validateRoomSetup };

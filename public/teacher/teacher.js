@@ -53,6 +53,7 @@ const els = {
   setupTeamsBackBtn: document.getElementById("setup-teams-back-btn"),
   setupTeamsContinueBtn: document.getElementById("setup-teams-continue-btn"),
 
+  timePerQuestionSelect: document.getElementById("time-per-question-select"),
   quizDownloadTemplateBtn: document.getElementById("quiz-download-template-btn"),
   quizXlsxInput: document.getElementById("quiz-xlsx-input"),
   quizPasteTextarea: document.getElementById("quiz-paste-textarea"),
@@ -218,7 +219,8 @@ let setupState = {
   event: { title: "", subtitle: "", organizer: "", logoDataUri: null },
   groupMode: "individual",
   teams: [],
-  quiz: null
+  quiz: null,
+  settings: { timePerQuestion: 20 }
 };
 let teamIdCounter = 0;
 
@@ -391,6 +393,13 @@ els.setupTeamsContinueBtn.addEventListener("click", () => {
 // errors} shape — renderImportResult() below is the one shared preview/
 // error UI every method uses, regardless of which format the teacher chose.
 
+// Applies to every question regardless of import source — the server
+// overrides each question's own timeLimitSeconds with this value at room
+// creation (src/eventValidation.js), not here; this just records the choice.
+els.timePerQuestionSelect.addEventListener("change", () => {
+  setupState.settings.timePerQuestion = Number(els.timePerQuestionSelect.value);
+});
+
 let lastImportResult = null;
 
 function renderImportResult(result) {
@@ -543,7 +552,8 @@ els.setupReviewCreateBtn.addEventListener("click", () => {
       event: setupState.event,
       groupMode: setupState.groupMode,
       teams: setupState.teams,
-      quiz: setupState.quiz
+      quiz: setupState.quiz,
+      settings: setupState.settings
     },
     (res) => {
       els.setupReviewCreateBtn.disabled = false;
@@ -1051,6 +1061,7 @@ async function init() {
       if (reconnectRes.groupMode) setupState.groupMode = reconnectRes.groupMode;
       if (reconnectRes.teams) setupState.teams = reconnectRes.teams;
       if (reconnectRes.quiz) setupState.quiz = reconnectRes.quiz;
+      if (reconnectRes.settings) setupState.settings = reconnectRes.settings;
       applyBrandChip(setupState.event);
       updatePageTitle(setupState.event, "Teacher");
       applyReconnectSnapshot(reconnectRes);

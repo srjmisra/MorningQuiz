@@ -19,14 +19,18 @@ function hasAnyActiveRoom() {
   return rooms.size > 0;
 }
 
-// setup ({event, groupMode, teams, quiz}) is the teacher's already-validated
-// setup wizard payload — see src/eventValidation.js, called from
-// socketHandlers.js's teacher:createRoom handler before this ever runs.
-// event/groupMode/teams are purely descriptive (teacher's own branding/
-// reconnect display). quiz drives gameplay directly (room.quiz.questions).
-// teams is also the *only* source of team identity now — participants are
-// self-registered per room (see joinPlayer below), not looked up from any
-// static roster.
+// setup ({event, groupMode, teams, quiz, settings}) is the teacher's
+// already-validated setup wizard payload — see src/eventValidation.js,
+// called from socketHandlers.js's teacher:createRoom handler before this
+// ever runs. event/groupMode/teams are purely descriptive (teacher's own
+// branding/reconnect display). quiz drives gameplay directly
+// (room.quiz.questions) — any settings.timePerQuestion override has
+// already been baked into each question's timeLimitSeconds by
+// eventValidation.js, so gameEngine.js needs no changes to respect it.
+// settings itself is stored here only for reconnect-display parity with
+// event/groupMode/teams/quiz. teams is also the *only* source of team
+// identity now — participants are self-registered per room (see
+// joinPlayer below), not looked up from any static roster.
 function createRoom(teacherSocketId, setup) {
   const code = generateCode();
   const room = {
@@ -43,7 +47,8 @@ function createRoom(teacherSocketId, setup) {
     quiz: (setup && setup.quiz) || null,
     event: (setup && setup.event) || null,
     groupMode: (setup && setup.groupMode) || null,
-    teams: (setup && setup.teams) || []
+    teams: (setup && setup.teams) || [],
+    settings: (setup && setup.settings) || { timePerQuestion: null }
   };
   rooms.set(code, room);
   return room;
