@@ -34,8 +34,3 @@ function startCountdownRing(circleEl, textEl, seconds) {
 
   return intervalId;
 }
-
-function stopCountdownRing(circleEl, intervalId) {
-  if (intervalId) clearInterval(intervalId);
-  if (circleEl) circleEl.style.transition = "none";
-}

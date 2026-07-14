@@ -3,7 +3,7 @@ const express = require("express");
 const { createServer } = require("http");
 const { Server } = require("socket.io");
 
-// Fails fast with a clear error if config/*.json is inconsistent.
+// Fails fast with a clear error if config/quizData.js (the sample quiz) is malformed.
 const dataStore = require("./src/dataStore");
 const roomManager = require("./src/roomManager");
 const { registerSocketHandlers } = require("./src/socketHandlers");
@@ -64,5 +64,5 @@ server.on("error", (err) => {
 });
 
 server.listen(PORT, () => {
-  console.log(`MorningQuiz server ready on port ${PORT}. Serve it behind your public HTTPS domain.`);
+  console.log(`UniversalQuiz server ready on port ${PORT}. Serve it behind your public HTTPS domain.`);
 });

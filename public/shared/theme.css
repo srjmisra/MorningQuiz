@@ -1,5 +1,5 @@
 /* =====================================================================
-   MorningQuiz Design System
+   UniversalQuiz Design System
    Color / Typography / Spacing / Radius / Shadow / Motion — every screen
    in both apps (teacher + student) draws from these tokens.
 
@@ -206,11 +206,6 @@ input {
   .answer-card:not(:disabled):hover {
     transform: translateY(-4px) scale(1.015);
     box-shadow: var(--shadow-md);
-  }
-
-  .participant-item:hover {
-    background: rgba(255, 255, 255, 0.09);
-    transform: translateX(2px);
   }
 
   .glass-card.interactive:hover {

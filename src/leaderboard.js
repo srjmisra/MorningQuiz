@@ -59,18 +59,16 @@ function computeTeamRankings(room) {
     .sort((a, b) => b.avgPerformance - a.avgPerformance);
 }
 
-function selectChampionIndividual(room) {
-  return computeIndividualRankings(room, 1)[0] || null;
-}
-
-function selectChampionTeam(room) {
-  return computeTeamRankings(room)[0] || null;
-}
+// Winner selection is deliberately not a separate function: the champion
+// is always rankings[0] of the exact same computeIndividualRankings/
+// computeTeamRankings output gameEngine.finishEvent already computes for
+// the full leaderboard payload — a dedicated wrapper would just re-run the
+// same sort a second time for no benefit. "Single source of truth for
+// winner selection" is satisfied by there being exactly one ranking
+// function, not by a redundant accessor on top of it.
 
 module.exports = {
   participantOf,
   computeIndividualRankings,
-  computeTeamRankings,
-  selectChampionIndividual,
-  selectChampionTeam
+  computeTeamRankings
 };
