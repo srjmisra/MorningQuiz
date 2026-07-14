@@ -28,16 +28,12 @@ app.get("/api/roster", (req, res) => {
   // v2-only convenience roomManager uses internally for teacher reconnect.
   //
   // No more fixed participant/group rosters to serve — students self-
-  // register (see student:joinRoom), so this now only tells the client
-  // what it needs before that: the active room's own branding/mode/teams
-  // (roomEvent/groupMode/teams), if any room exists yet.
-  //
-  // `event` (static config/event.json) is kept separately and unchanged —
-  // it's still what teacher.js's session badge reads, unrelated to any
-  // specific room.
+  // register (see student:joinRoom), so this only tells the client what it
+  // needs before that: the active room's own branding/mode/teams, if any
+  // room exists yet. All branding is per-room now — there's no separate
+  // static "event" to fall back to.
   const room = roomManager.getSoleActiveRoom();
   res.json({
-    event: dataStore.event,
     roomEvent: room ? room.event : null,
     groupMode: room ? room.groupMode : null,
     teams: room ? room.teams : [],

@@ -1,6 +1,7 @@
 const socket = io();
 
-let roster = { event: {} };
+let roster = { liveRoomStatus: null };
+let roomEvent = null;
 let groupMode = null;
 let roomTeams = [];
 let myParticipant = null; // { id, name, teamId } — set on join/rejoin, never a preset roster lookup
@@ -49,10 +50,10 @@ socket.on("session:reset", () => {
 });
 
 const els = {
-  pwOrg: document.getElementById("pw-org"),
-  pwInstitute: document.getElementById("pw-institute"),
+  pwLogo: document.getElementById("pw-logo"),
+  pwOrganizer: document.getElementById("pw-organizer"),
   pwTitle: document.getElementById("pw-title"),
-  pwProgramme: document.getElementById("pw-programme"),
+  pwSubtitle: document.getElementById("pw-subtitle"),
   pwContinueBtn: document.getElementById("pw-continue-btn"),
 
   sessionStateHeading: document.getElementById("session-state-heading"),
@@ -92,12 +93,14 @@ const els = {
   resultStreak: document.getElementById("result-streak"),
   achievementRow: document.getElementById("achievement-row"),
 
+  finalLogo: document.getElementById("final-logo"),
   finalHeading: document.getElementById("final-heading"),
   finalMyRank: document.getElementById("final-my-rank"),
   finalMyScore: document.getElementById("final-my-score"),
   finalMyGroupRank: document.getElementById("final-my-group-rank"),
   finalAchievementRow: document.getElementById("final-achievement-row"),
-  finalChampionNote: document.getElementById("final-champion-note")
+  finalChampionNote: document.getElementById("final-champion-note"),
+  finalThanks: document.getElementById("final-thanks")
 };
 
 let currentQuestionIndex = null;
@@ -398,6 +401,11 @@ socket.on("game:finalResults", (data) => {
     data.championIndividual ? data.championIndividual.name : "–"
   } · Champion Group: ${data.championGroup ? data.championGroup.name : "–"}`;
 
+  els.finalLogo.src = brandLogoSrc(roomEvent && roomEvent.logoDataUri);
+  els.finalThanks.textContent = `Thank you for participating${
+    roomEvent && roomEvent.organizer ? ` — ${roomEvent.organizer}` : ""
+  }!`;
+
   const finalBadges = [];
   if (myLongestStreak >= 3) finalBadges.push({ icon: "🔥", label: "Answer Streak" });
   if (data.hallOfFame.highestAccuracy && data.hallOfFame.highestAccuracy.name === myParticipant.name) {
@@ -421,24 +429,12 @@ socket.on("game:finalResults", (data) => {
   }
 });
 
-function renderSessionBranding(session) {
-  const enabled = Boolean(session && session.enabled);
-  document
-    .querySelectorAll(".session-block, .session-subtitle")
-    .forEach((el) => (el.style.display = enabled ? "" : "none"));
-  if (!enabled) return;
-  document.querySelectorAll("[data-session-type]").forEach((el) => (el.textContent = session.type));
-  document
-    .querySelectorAll("[data-session-presented-by]")
-    .forEach((el) => (el.textContent = session.presentedBy));
-}
-
 function renderParticipantWelcome() {
-  const e = roster.event;
-  els.pwOrg.textContent = e.organization || "";
-  els.pwInstitute.textContent = e.instituteEnglishFull || e.institute || "";
-  els.pwTitle.textContent = e.tagline || e.workshopTitle || "";
-  els.pwProgramme.textContent = e.programme || "";
+  const e = roomEvent || {};
+  els.pwLogo.src = brandLogoSrc(e.logoDataUri);
+  els.pwOrganizer.textContent = e.organizer ? `by ${e.organizer}` : "";
+  els.pwTitle.textContent = e.title || "Live Quiz";
+  els.pwSubtitle.textContent = e.subtitle || "";
 }
 
 els.pwContinueBtn.addEventListener("click", () => {
@@ -446,6 +442,9 @@ els.pwContinueBtn.addEventListener("click", () => {
 });
 
 async function init() {
+  applyBrandChip(null);
+  updatePageTitle(null, "Join");
+
   const params = new URLSearchParams(window.location.search);
   const codeParam = params.get("code") ? params.get("code").replace(/\D/g, "").slice(0, 6) : null;
   if (codeParam) {
@@ -455,11 +454,13 @@ async function init() {
   try {
     const res = await fetch("/api/roster");
     roster = await res.json();
+    roomEvent = roster.roomEvent;
     groupMode = roster.groupMode;
     roomTeams = roster.teams || [];
 
     renderParticipantWelcome();
-    renderSessionBranding(roster.event.session);
+    applyBrandChip(roomEvent);
+    updatePageTitle(roomEvent, "Join");
     populateTeamSelect();
 
     if (roster.liveRoomStatus === null) {

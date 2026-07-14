@@ -4,17 +4,17 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <meta name="theme-color" content="#0b0f1a" />
-<title>MorningQuiz — Teacher</title>
+<title>UniversalQuiz — Teacher</title>
 <link rel="stylesheet" href="/shared/theme.css" />
 <link rel="stylesheet" href="teacher.css" />
 </head>
 <body>
   <div id="splash-screen" class="splash-screen">
     <div class="brand-logo-frame">
-      <picture>
-        <source srcset="/shared/assets/images/kvs-logo.webp" type="image/webp" />
-        <img class="brand-logo" src="/shared/assets/images/kvs-logo.png" alt="Kendriya Vidyalaya Sangathan" />
-      </picture>
+      <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z" />
+        <path d="M20 2v4" /><path d="M22 4h-4" /><circle cx="4" cy="20" r="2" />
+      </svg>
     </div>
     <div class="pulse-dot"></div>
   </div>
@@ -25,15 +25,10 @@
 
   <div class="brand-chip">
     <picture>
-      <source srcset="/shared/assets/images/kvs-logo.webp" type="image/webp" />
-      <img class="brand-chip-logo" src="/shared/assets/images/kvs-logo.png" alt="Kendriya Vidyalaya Sangathan" />
+      <img class="brand-chip-logo" id="brand-chip-logo" src="" alt="Event logo" />
     </picture>
-    <span class="brand-chip-text"><strong>KVS · ZIET Bhubaneswar</strong><span class="brand-chip-sub">Code to Career · PGT(CS)</span></span>
+    <span class="brand-chip-text"><strong id="brand-chip-title">UniversalQuiz</strong><span class="brand-chip-sub" id="brand-chip-subtitle">Live Quiz</span></span>
     <span class="connection-dot" id="connection-dot" role="status" aria-label="Connected"></span>
-  </div>
-
-  <div class="session-badge-corner" id="session-badge-corner">
-    <span class="icon" data-icon="trophy" data-icon-size="12"></span> Presented by <span data-session-presented-by></span>
   </div>
 
   <div style="position:fixed; left:calc(12px + env(safe-area-inset-left)); bottom:calc(90px + env(safe-area-inset-bottom)); z-index:900; display:flex; gap:6px;">
@@ -308,12 +303,9 @@ Answer: A</pre>
     <section id="view-final" class="view view-final-celebration">
       <div class="final-hero">
         <div class="brand-logo-frame brand-logo-frame-sm">
-          <picture>
-            <source srcset="/shared/assets/images/kvs-logo.webp" type="image/webp" />
-            <img class="brand-logo" src="/shared/assets/images/kvs-logo.png" alt="Kendriya Vidyalaya Sangathan logo" />
-          </picture>
+          <img class="brand-logo" id="final-logo" src="" alt="Event logo" />
         </div>
-        <p class="final-kicker">Code to Career · 5-Day Workshop</p>
+        <p class="final-kicker" id="final-kicker"></p>
         <h1><span class="icon" data-icon="trophy" data-icon-size="44"></span> Quiz Complete</h1>
       </div>
 
@@ -334,12 +326,7 @@ Answer: A</pre>
         </div>
       </div>
 
-      <div class="session-block session-block-inline" id="final-session-block" style="text-align: center;">
-        <p class="session-type" data-session-type></p>
-        <p class="session-presented-by">Presented by <span data-session-presented-by></span></p>
-      </div>
-
-      <p class="final-thanks">Thank you for participating — केन्द्रीय विद्यालय संगठन, ZIET Bhubaneswar</p>
+      <p class="final-thanks" id="final-thanks"></p>
     </section>
   </div>
 
@@ -361,6 +348,7 @@ Answer: A</pre>
   <script src="/shared/splash.js"></script>
   <script src="/shared/icons.js"></script>
   <script src="/shared/emblems.js"></script>
+  <script src="/shared/branding.js"></script>
   <script src="/shared/xlsx.mini.min.js"></script>
   <script src="/shared/quizImport.js"></script>
   <script src="teacher.js"></script>

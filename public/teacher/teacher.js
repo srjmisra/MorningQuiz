@@ -115,6 +115,9 @@ const els = {
   hofGrid: document.getElementById("hof-grid"),
   nextQuestionBtn: document.getElementById("next-question-btn"),
 
+  finalLogo: document.getElementById("final-logo"),
+  finalKicker: document.getElementById("final-kicker"),
+  finalThanks: document.getElementById("final-thanks"),
   podiumRow: document.getElementById("podium-row"),
   championRow: document.getElementById("champion-row"),
   finalHofGrid: document.getElementById("final-hof-grid"),
@@ -131,7 +134,6 @@ const els = {
   statLeadingIndividual: document.getElementById("stat-leading-individual")
 };
 
-let roster = { event: {} };
 let latestLobby = null;
 let currentQuestion = null;
 let countdownIntervalId = null;
@@ -193,6 +195,8 @@ function enterLobby(code) {
   els.roomCodeDisplay.textContent = code;
   els.joinUrlDisplay.textContent = joinUrl;
   renderQr(joinUrl);
+  applyBrandChip(setupState.event);
+  updatePageTitle(setupState.event, "Teacher");
   showView("view-lobby");
 }
 
@@ -922,6 +926,11 @@ function handleFinalResults(data, opts) {
   els.statsBar.classList.remove("visible");
   endQuizBtn.hidden = true;
 
+  const e = setupState.event;
+  els.finalLogo.src = brandLogoSrc(e && e.logoDataUri);
+  els.finalKicker.textContent = e && e.organizer ? `By ${e.organizer}` : "";
+  els.finalThanks.textContent = `Thank you for participating${e && e.organizer ? ` — ${e.organizer}` : ""}!`;
+
   renderPodium(data.finalGroupRankings);
   renderChampions(data.championIndividual, data.championGroup);
   renderHallOfFame(data.hallOfFame, els.finalHofGrid);
@@ -943,18 +952,6 @@ function handleFinalResults(data, opts) {
   }
 }
 socket.on("game:finalResults", (data) => handleFinalResults(data));
-
-function renderSessionBranding(session) {
-  const enabled = Boolean(session && session.enabled);
-  document
-    .querySelectorAll(".session-block, .session-badge-corner")
-    .forEach((el) => (el.style.display = enabled ? "" : "none"));
-  if (!enabled) return;
-  document.querySelectorAll("[data-session-type]").forEach((el) => (el.textContent = session.type));
-  document
-    .querySelectorAll("[data-session-presented-by]")
-    .forEach((el) => (el.textContent = session.presentedBy));
-}
 
 // Fills every static <span class="icon" data-icon="name" data-icon-size="n">
 // placeholder in the current HTML with its Lucide SVG — keeps icon markup
@@ -1011,11 +1008,12 @@ function applyReconnectSnapshot(snapshot) {
 
 async function init() {
   hydrateIcons();
-  try {
-    const res = await fetch("/api/roster");
-    roster = await res.json();
-    renderSessionBranding(roster.event.session);
+  // Generic branding until (if ever) a reconnect restores an actual room's
+  // event — the setup wizard itself is what populates it for a fresh room.
+  applyBrandChip(null);
+  updatePageTitle(null, "Teacher");
 
+  try {
     const reconnectRes = await new Promise((resolve) => {
       socket.emit("teacher:reconnect", {}, resolve);
     });
@@ -1027,10 +1025,12 @@ async function init() {
       if (reconnectRes.groupMode) setupState.groupMode = reconnectRes.groupMode;
       if (reconnectRes.teams) setupState.teams = reconnectRes.teams;
       if (reconnectRes.quiz) setupState.quiz = reconnectRes.quiz;
+      applyBrandChip(setupState.event);
+      updatePageTitle(setupState.event, "Teacher");
       applyReconnectSnapshot(reconnectRes);
     }
   } catch (err) {
-    console.error("Failed to load roster:", err);
+    console.error("Failed to reconnect:", err);
   } finally {
     hideSplashScreen();
   }

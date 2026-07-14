@@ -5,48 +5,38 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
 <meta name="theme-color" content="#0b0f1a" />
 <link rel="manifest" href="/shared/manifest.json" />
-<title>MorningQuiz — Join</title>
+<title>UniversalQuiz — Join</title>
 <link rel="stylesheet" href="/shared/theme.css" />
 <link rel="stylesheet" href="student.css" />
 </head>
 <body>
   <div id="splash-screen" class="splash-screen">
     <div class="brand-logo-frame">
-      <picture>
-        <source srcset="/shared/assets/images/kvs-logo.webp" type="image/webp" />
-        <img class="brand-logo" src="/shared/assets/images/kvs-logo.png" alt="Kendriya Vidyalaya Sangathan" />
-      </picture>
+      <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z" />
+        <path d="M20 2v4" /><path d="M22 4h-4" /><circle cx="4" cy="20" r="2" />
+      </svg>
     </div>
     <div class="pulse-dot"></div>
   </div>
 
   <div class="brand-chip">
     <picture>
-      <source srcset="/shared/assets/images/kvs-logo.webp" type="image/webp" />
-      <img class="brand-chip-logo" src="/shared/assets/images/kvs-logo.png" alt="Kendriya Vidyalaya Sangathan" />
+      <img class="brand-chip-logo" id="brand-chip-logo" src="" alt="Event logo" />
     </picture>
-    <span class="brand-chip-text"><strong>KVS · ZIET Bhubaneswar</strong><span class="brand-chip-sub">Code to Career · PGT(CS)</span></span>
+    <span class="brand-chip-text"><strong id="brand-chip-title">UniversalQuiz</strong><span class="brand-chip-sub" id="brand-chip-subtitle">Live Quiz</span></span>
   </div>
 
   <div class="app-shell">
     <section id="view-participant-welcome" class="view view-active">
       <div class="participant-welcome">
         <div class="brand-logo-frame">
-          <picture>
-            <source srcset="/shared/assets/images/kvs-logo.webp" type="image/webp" />
-            <img class="brand-logo" src="/shared/assets/images/kvs-logo.png" alt="Kendriya Vidyalaya Sangathan" />
-          </picture>
+          <img class="brand-logo" id="pw-logo" src="" alt="Event logo" />
         </div>
-        <p class="kicker" id="pw-org">Kendriya Vidyalaya Sangathan</p>
-        <p class="kicker-sub" id="pw-institute">ZIET Bhubaneswar</p>
+        <p class="kicker" id="pw-organizer"></p>
 
-        <h1 class="pw-title" id="pw-title">From Code to Career</h1>
-        <p class="pw-programme" id="pw-programme">Strengthening PGT(CS) for Teaching of C.S. & I.P.</p>
-
-        <div class="session-block" id="pw-session-block">
-          <p class="session-type" data-session-type></p>
-          <p class="session-presented-by">Presented by <span data-session-presented-by></span></p>
-        </div>
+        <h1 class="pw-title" id="pw-title"></h1>
+        <p class="pw-programme" id="pw-subtitle"></p>
 
         <p class="pw-welcome-msg">Welcome! Tap below to join the live quiz.</p>
 
@@ -158,10 +148,7 @@
     <section id="view-final" class="view">
       <div class="glass-card final-panel">
         <div class="brand-logo-frame brand-logo-frame-sm">
-          <picture>
-            <source srcset="/shared/assets/images/kvs-logo.webp" type="image/webp" />
-            <img class="brand-logo" src="/shared/assets/images/kvs-logo.png" alt="Kendriya Vidyalaya Sangathan logo" />
-          </picture>
+          <img class="brand-logo" id="final-logo" src="" alt="Event logo" />
         </div>
         <h1 id="final-heading">🏁 Quiz Complete!</h1>
 
@@ -175,12 +162,7 @@
 
         <p class="final-champion-note" id="final-champion-note"></p>
 
-        <div class="session-block session-block-inline" id="final-session-block">
-          <p class="session-type" data-session-type></p>
-          <p class="session-presented-by">Presented by <span data-session-presented-by></span></p>
-        </div>
-
-        <p class="final-note">Thank you for participating — केन्द्रीय विद्यालय संगठन, ZIET Bhubaneswar</p>
+        <p class="final-note" id="final-thanks"></p>
       </div>
     </section>
   </div>
@@ -191,6 +173,7 @@
   <script src="/shared/splash.js"></script>
   <script src="/shared/icons.js"></script>
   <script src="/shared/emblems.js"></script>
+  <script src="/shared/branding.js"></script>
   <script src="student.js"></script>
 </body>
 </html>
